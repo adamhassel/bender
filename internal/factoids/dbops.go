@@ -8,8 +8,8 @@ import (
 	"log"
 	"math/rand"
 	"strings"
-	"time"
 	"sync"
+	"time"
 	"unicode/utf8"
 
 	"gopkg.in/yaml.v2"
@@ -17,14 +17,14 @@ import (
 
 // factoids is the data struture used for thread safe in memorystorage of factoids
 type factoids struct {
-	m sync.Mutex
-	v map[string]StringSet
+	m  sync.Mutex
+	v  map[string]StringSet
 	db string
 }
 
 const (
 	DefaultConfFile = "conf/factoids.yml"
-	DefaultDBPath = "db/factoids.yml"
+	DefaultDBPath   = "db/factoids.yml"
 )
 
 // f is the package-level in memory cache of factoids. It is synced to disk on every change.
@@ -51,22 +51,22 @@ func init() {
 }
 
 func loadDB(filename string) error {
-		f.db = filename
-		content, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return fmt.Errorf("error loading database at %q: %w", err)
-		}
-		factsfromdisk := make(map[string][]string)
-		if err :=  yaml.Unmarshal(content, &factsfromdisk); err != nil {
-			return fmt.Errorf("error parsing database at %q: %w", err)
-		}
-		f.m.Lock()
-		defer f.m.Unlock()
-		f.v = make(map[string]StringSet)
-		for k, vs := range factsfromdisk {
-			f.v[k] = NewStringSet(vs...)
-		}
-		return nil
+	f.db = filename
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return fmt.Errorf("error loading database at %q: %w", err)
+	}
+	factsfromdisk := make(map[string][]string)
+	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {
+		return fmt.Errorf("error parsing database at %q: %w", err)
+	}
+	f.m.Lock()
+	defer f.m.Unlock()
+	f.v = make(map[string]StringSet)
+	for k, vs := range factsfromdisk {
+		f.v[k] = NewStringSet(vs...)
+	}
+	return nil
 }
 
 // Set adds a value to a factoid key
@@ -101,7 +101,7 @@ func (f *factoids) getall(key string) ([]string, error) {
 	f.m.Lock()
 	vals, ok := f.v[key]
 	f.m.Unlock()
-	if !ok || len(vals) == 0{
+	if !ok || len(vals) == 0 {
 		return nil, ErrNoSuchFact
 	}
 	return vals.Slice(), nil
@@ -141,7 +141,7 @@ func (f *factoids) delete(key string) {
 	f.m.Unlock()
 }
 
-// List lists all keys mathcing `substring`
+// ListFacts lists all keys mathcing `substring`
 func ListFacts(substr string) ([]string, error) {
 	return nil, nil
 }
@@ -149,14 +149,14 @@ func ListFacts(substr string) ([]string, error) {
 // sync syncs the in memory DB to disk. THe caller should lock!
 func syncToDisk() error {
 	factsfordisk := make(map[string][]string)
-	for k, vs := range f.v{
+	for k, vs := range f.v {
 		factsfordisk[k] = vs.Slice()
 	}
 	ymldata, err := yaml.Marshal(factsfordisk)
 	if err != nil {
 		return fmt.Errorf("error marshalling DB: %w", err)
 	}
-	if err := ioutil.WriteFile(f.db, ymldata, 0644); err != nil{
+	if err := ioutil.WriteFile(f.db, ymldata, 0644); err != nil {
 		return fmt.Errorf("error syncing to file %q: %w", err)
 	}
 	return nil

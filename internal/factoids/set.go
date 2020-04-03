@@ -40,13 +40,3 @@ func (s StringSet) Delete(val string) {
 	}
 	delete(s, val)
 }
-
-/*
-func (s StringSet) MarshalYAML() (interface{}, error) {
-	return yaml.Marshal(s.Slice())
-}
-
-func (s StringSet) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	return unmarshal(s.Slice())
-}
-*/
