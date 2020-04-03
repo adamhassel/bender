@@ -2,29 +2,37 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"strconv"
+
+	"gopkg.in/yaml.v2"
 )
 
+type Main struct {
+	Logfile  string `yaml:"logfile"`
+	LogLevel string `yaml:"loglevel"`
+}
+
 type Identity struct {
-	Nick string `yaml:"nick"`
-	Name string `yaml:"name"`
+	Nick       string `yaml:"nick"`
+	Name       string `yaml:"name"`
 	Modestring string `yaml:"modestring"`
 }
 
 type ServerOpts struct {
-	Port int `yaml:"port"`
-	SSL bool `yaml:"ssl"`
-	SkipInsecureVerify bool `yaml:"sslskipverify"`
-	Password string `yaml:"password"`
-	Channels []string `yaml:"channels"`
-	Identity Identity `yaml:"identity"`
+	Port               int      `yaml:"port"`
+	SSL                bool     `yaml:"ssl"`
+	SkipInsecureVerify bool     `yaml:"sslskipverify"`
+	Password           string   `yaml:"password"`
+	Channels           []string `yaml:"channels"`
+	Ignore             []string `yaml:"ignore"`
+	Identity           Identity `yaml:"identity"`
 }
 
 type Config struct {
-	Identity Identity `yaml:"identity"`
-	Servers map[string]ServerOpts `yaml:"servers"`
+	Main     Main                  `yaml:"main"`
+	Identity Identity              `yaml:"identity"`
+	Servers  map[string]ServerOpts `yaml:"servers"`
 }
 
 // ParseConfFile parses configuration in `filename` and returns a configuration and an error
