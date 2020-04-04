@@ -1,15 +1,28 @@
 package factoids
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 )
+
+func NewReplyString(ctx *context.Context, msg string) string {
+	c := ConfigFromContext(*ctx)
+	replystring := strings.TrimPrefix(msg, "!newreply ")
+	if strings.Count(replystring, "%s") != 2 {
+		return "You need exactly two '%s' captures in your reply"
+	}
+	c.ReplyStrings = append(c.ReplyStrings, replystring)
+	*ctx = c.Context(*ctx)
+	return `OK, I'll use "` + replystring + `"in replies`
+}
 
 // Lookup returns a string to output to the channel, and a bool indicating if it's an action ('/me blabla')
 func Lookup(msg string) (string, bool) {
 	factoidstring := strings.TrimPrefix(msg, "!? ")
 	factoidstring = strings.TrimSpace(factoidstring)
-	factoid, err := Get(strings.ToLower(factoidstring))
+	factoid, err := get(strings.ToLower(factoidstring))
 	if err == ErrNoSuchFact {
 		return fmt.Sprintf("Nobody cares about %q!", factoidstring), false
 	}
@@ -20,18 +33,23 @@ func Lookup(msg string) (string, bool) {
 	if strings.HasPrefix(factoid, "<me> ") {
 		return strings.TrimPrefix(factoid, "<me> "), true
 	}
-	return fmt.Sprintf("Some say that %s is %s", factoidstring, factoid), false
+	// pick a random replystring
+	reply := c.ReplyStrings.Random()
+
+	return fmt.Sprintf(reply, factoidstring, factoid), false
+	//return fmt.Sprintf("Some say that %s is %s", factoidstring, factoid), false
 }
 
 // Store saves a factoid to the database
-func Store(msg string) string {
+func Store(msg string, from string) string {
 	factoidstring := strings.TrimPrefix(msg, "!! ")
 	f := strings.SplitN(factoidstring, " is ", 2)
 	if len(f) != 2 {
 		return "You gotta format it right, moron."
 	}
 	key, val := strings.TrimSpace(f[0]), strings.TrimSpace(f[1])
-	if err := Set(strings.ToLower(key), val); err != nil {
+	fact := factoid{Value: val, Origin: from, Created: time.Now().Round(time.Second)}
+	if err := set(strings.ToLower(key), fact); err != nil {
 		switch err {
 		case ErrFactAlreadyExists:
 			return "I know that already"
