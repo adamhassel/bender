@@ -19,5 +19,5 @@ servers:
     ssl: true
     sslskipverify: false
     password: folkerusletaaber
-    channels: ["#bendertest", "#testbot"]
+    channels: ["#bendertest2", "#testbot"]
     ignore: ["flexo"]

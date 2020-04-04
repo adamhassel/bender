@@ -1,44 +1,22 @@
 package irc
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
-	"os"
 	"sync"
 
 	"github.com/adamhassel/bender/internal/config"
-	"github.com/sirupsen/logrus"
 
 	irc "github.com/thoj/go-ircevent"
 )
 
-func confLogger(conf config.Main) *io.PipeWriter {
-	logger := logrus.New()
-	level, err := logrus.ParseLevel(conf.LogLevel)
-	if err != nil {
-		fmt.Printf("unknown loglevel %q, defaulting to 'debug'")
-		level = logrus.DebugLevel
-	}
-	logger.Out = os.Stderr
-	file, err := os.OpenFile(conf.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err == nil {
-		logger.Out = file
-	} else {
-		logger.Info("Failed to log to file, using default stderr")
-	}
-
-	logger.SetLevel(level)
-	logger.Formatter = &logrus.TextFormatter{}
-	return logger.Writer()
-}
-
-func InitBot(conf config.Config) error {
+func InitBot(ctx context.Context) error {
+	conf := config.ConfigFromContext(ctx)
 	var wg sync.WaitGroup
-	logwriter := confLogger(conf.Main)
 	for server, sconf := range conf.Servers {
 		irccon := irc.IRC(sconf.Identity.Nick, sconf.Identity.Name)
-		irccon.Log.SetOutput(logwriter)
+		irccon.Log.SetOutput(conf.Main.LogWriter)
 		irccon.VerboseCallbackHandler = true
 		irccon.Debug = conf.Main.LogLevel == "debug"
 		irccon.UseTLS = sconf.SSL
@@ -58,7 +36,7 @@ func InitBot(conf config.Config) error {
 				irccon.Log.Printf("Ignoring %q", e.Nick)
 				return
 			}
-			go HandleMessages(irccon, e)
+			go HandleMessages(ctx, irccon, e)
 		})
 
 		err := irccon.Connect(conf.ServerPort(server))

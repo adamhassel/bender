@@ -1,6 +1,7 @@
 package irc
 
 import (
+	"context"
 	"strings"
 
 	"github.com/adamhassel/bender/internal/factoids"
@@ -8,7 +9,7 @@ import (
 )
 
 // HandleMessages is the function that intercepts channel (or private) messages and handles them
-func HandleMessages(c *irc.Connection, e *irc.Event) {
+func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	msg := e.Message()
 	channel := e.Arguments[0]
 	if strings.HasPrefix(msg, c.GetNick()) {
@@ -16,19 +17,24 @@ func HandleMessages(c *irc.Connection, e *irc.Event) {
 	}
 
 	if strings.HasPrefix(msg, "!! ") {
-		reply := factoids.Store(msg)
+		reply := factoids.Store(msg, e.Nick)
 		c.Privmsg(channel, reply)
 	}
 
 	if strings.HasPrefix(msg, "!? ") {
 		reply, action := factoids.Lookup(msg)
-		if action {
-			c.Action(channel, reply)
-			return
-		}
-		c.Privmsg(channel, reply)
+		SendReply(c, channel, reply, action)
 	}
-	if strings.HasPrefix(msg, "!listfacts ") {
-		c.Privmsg(channel, "noone implemented this yet")
+	if msg == "!random" {
+		reply, action := factoids.Lookup(factoids.RandomKey())
+		SendReply(c, channel, reply, action)
 	}
+}
+
+func SendReply(c *irc.Connection, ch string, msg string, action bool) {
+	if action {
+		c.Action(ch, msg)
+		return
+	}
+	c.Privmsg(ch, msg)
 }
