@@ -1,16 +1,22 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
+	"os"
 	"strconv"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
 type Main struct {
-	Logfile  string `yaml:"logfile"`
-	LogLevel string `yaml:"loglevel"`
+	Logfile   string    `yaml:"logfile"`
+	LogLevel  string    `yaml:"loglevel"`
+	LogWriter io.Writer `yaml:"-"`
 }
 
 type Identity struct {
@@ -33,6 +39,31 @@ type Config struct {
 	Main     Main                  `yaml:"main"`
 	Identity Identity              `yaml:"identity"`
 	Servers  map[string]ServerOpts `yaml:"servers"`
+}
+
+type ctxconf int
+
+const configkey ctxconf = iota
+
+func InitLogger(config *Config) {
+	logger := logrus.New()
+	level, err := logrus.ParseLevel(config.Main.LogLevel)
+	if err != nil {
+		fmt.Printf("unknown loglevel %q, defaulting to 'debug'")
+		level = logrus.DebugLevel
+	}
+	logger.Out = os.Stderr
+	file, err := os.OpenFile(config.Main.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		logger.Out = file
+	} else {
+		logger.Info("Failed to log to file, using default stderr")
+	}
+
+	logger.SetLevel(level)
+	logger.Formatter = &logrus.TextFormatter{}
+	config.Main.LogWriter = logger.Writer()
+	log.SetOutput(logger.Writer())
 }
 
 // ParseConfFile parses configuration in `filename` and returns a configuration and an error
@@ -67,4 +98,18 @@ func (c Config) ServerPort(s string) string {
 		return s + ":" + strconv.Itoa(sc.Port)
 	}
 	return ""
+}
+
+// Context returns a new context from ctx with c attached
+func (c Config) Context(ctx context.Context) context.Context {
+	return context.WithValue(ctx, configkey, c)
+}
+
+func ConfigFromContext(ctx context.Context) Config {
+	c := ctx.Value(configkey)
+	config, ok := c.(Config)
+	if ok {
+		return config
+	}
+	return Config{}
 }

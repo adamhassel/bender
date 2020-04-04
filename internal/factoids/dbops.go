@@ -12,13 +12,15 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/adamhassel/bender/internal/helpers"
+
 	"gopkg.in/yaml.v2"
 )
 
 // factoids is the data struture used for thread safe in memorystorage of factoids
 type factoids struct {
 	m  sync.Mutex
-	v  map[string]StringSet
+	v  map[string]FactoidSet
 	db string
 }
 
@@ -35,8 +37,9 @@ var ErrAmbiguousKey = errors.New("ambiguous key")
 var ErrFactAlreadyExists = errors.New("fact already exists")
 var ErrInvalidUTF8 = errors.New("invalid UTF-8")
 
+// TODO: change how we load configs, maybe pass along in contexts?
 func init() {
-	f.v = make(map[string]StringSet)
+	f.v = make(map[string]FactoidSet)
 	c, err := ParseConfFile(DefaultConfFile)
 	if err != nil {
 		log.Print(err)
@@ -50,34 +53,44 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+func RandomKey() string {
+	keys := make(helpers.StringSlice, len(f.v))
+	var i int
+	for k := range f.v {
+		keys[i] = k
+		i++
+	}
+	return keys.Random()
+}
+
 func loadDB(filename string) error {
 	f.db = filename
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("error loading database at %q: %w", err)
 	}
-	factsfromdisk := make(map[string][]string)
+	factsfromdisk := make(map[string][]factoid)
 	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {
 		return fmt.Errorf("error parsing database at %q: %w", err)
 	}
 	f.m.Lock()
 	defer f.m.Unlock()
-	f.v = make(map[string]StringSet)
+	f.v = make(map[string]FactoidSet)
 	for k, vs := range factsfromdisk {
-		f.v[k] = NewStringSet(vs...)
+		f.v[k] = NewFactoidSet(vs...)
 	}
 	return nil
 }
 
-// Set adds a value to a factoid key
-func Set(key, value string) error {
-	if !utf8.Valid([]byte(value)) {
+// set adds a value to a factoid key
+func set(key string, value factoid) error {
+	if !utf8.Valid([]byte(value.Value)) {
 		return ErrInvalidUTF8
 	}
 	f.m.Lock()
 	defer f.m.Unlock()
 	if _, ok := f.v[key]; !ok {
-		f.v[key] = NewStringSet()
+		f.v[key] = NewFactoidSet()
 	}
 	if f.v[key].Exists(value) {
 		return ErrFactAlreadyExists
@@ -87,14 +100,14 @@ func Set(key, value string) error {
 	return syncToDisk()
 }
 
-// Get retrieves a random fact from the factoid DB
-func Get(key string) (string, error) {
+// get retrieves a random fact from the factoid DB
+func get(key string) (string, error) {
 	vals, err := f.getall(key)
 	if err != nil || len(vals) == 0 {
 		return "", err
 	}
 	// pick a random fact from the list
-	return vals[rand.Intn(len(vals))], nil
+	return helpers.StringSlice(vals).Random(), nil
 }
 
 func (f *factoids) getall(key string) ([]string, error) {
@@ -104,7 +117,7 @@ func (f *factoids) getall(key string) ([]string, error) {
 	if !ok || len(vals) == 0 {
 		return nil, ErrNoSuchFact
 	}
-	return vals.Slice(), nil
+	return vals.StringSlice(), nil
 }
 
 // Delete removes a value from a key matching substring `substr`. If more than one match, return error
@@ -141,14 +154,14 @@ func (f *factoids) delete(key string) {
 	f.m.Unlock()
 }
 
-// ListFacts lists all keys mathcing `substring`
-func ListFacts(substr string) ([]string, error) {
+// listFacts lists all keys mathcing `substring`
+func listFacts(substr string) ([]string, error) {
 	return nil, nil
 }
 
 // sync syncs the in memory DB to disk. THe caller should lock!
 func syncToDisk() error {
-	factsfordisk := make(map[string][]string)
+	factsfordisk := make(map[string][]factoid)
 	for k, vs := range f.v {
 		factsfordisk[k] = vs.Slice()
 	}

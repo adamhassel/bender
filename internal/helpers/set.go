@@ -1,4 +1,4 @@
-package factoids
+package helpers
 
 type StringSet map[string]struct{}
 
