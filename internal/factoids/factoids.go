@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+// NewReplyString adds a custom reply string to the list of reply strings
+// TODO: save to config file
 func NewReplyString(ctx *context.Context, msg string) string {
 	c := ConfigFromContext(*ctx)
 	replystring := strings.TrimPrefix(msg, "!newreply ")
