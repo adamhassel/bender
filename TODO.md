@@ -15,3 +15,4 @@
   - factoids: list factoid keywords
   - irc: channel mode enforcing (low priority)
   - seen db, incl. if feasible away db
+  - plugins? Overkill for now, probably
