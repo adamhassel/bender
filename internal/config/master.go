@@ -66,30 +66,27 @@ func InitLogger(config *Config) {
 	log.SetOutput(logger.Writer())
 }
 
-// ParseConfFile parses configuration in `filename` and returns a configuration and an error
-func ParseConfFile(filename string) (Config, error) {
+// ParseConfFile parses configuration in `filename`, saves it in `c` and returns an error
+func ParseConfFile(filename string, c *Config) error {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return Config{}, fmt.Errorf("error reading %q: %w", filename, err)
+		return fmt.Errorf("error reading %q: %w", filename, err)
 	}
-	var c Config
 	if err := yaml.Unmarshal(content, &c); err != nil {
-		return Config{}, fmt.Errorf("error parsing configuration at %s: %w", filename, err)
+		return fmt.Errorf("error parsing configuration at %s: %w", filename, err)
 	}
-	// use global identity if none is set per server
-	for server, sconf := range c.Servers {
-		if sconf.Identity.Nick == "" {
-			sconf.Identity.Nick = c.Identity.Nick
-		}
-		if sconf.Identity.Name == "" {
-			sconf.Identity.Name = c.Identity.Name
-		}
-		if sconf.Identity.Modestring == "" {
-			sconf.Identity.Modestring = c.Identity.Modestring
-		}
-		c.Servers[server] = sconf
+	return nil
+}
+
+func SaveToFile(filename string, c Config) error {
+	raw, err := yaml.Marshal(c)
+	if err != nil {
+		return fmt.Errorf("error marshalling config: %w", err)
 	}
-	return c, nil
+	if err := ioutil.WriteFile(filename, raw, 0644); err != nil {
+		return fmt.Errorf("error writing file %s: %w", filename, err)
+	}
+	return nil
 }
 
 // ServerPort returns a string of servername:port
@@ -105,7 +102,8 @@ func (c Config) Context(ctx context.Context) context.Context {
 	return context.WithValue(ctx, configkey, c)
 }
 
-func ConfigFromContext(ctx context.Context) Config {
+// FromContext extracts configuration from a config if present
+func FromContext(ctx context.Context) Config {
 	c := ctx.Value(configkey)
 	config, ok := c.(Config)
 	if ok {

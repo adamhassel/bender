@@ -34,7 +34,15 @@ func ParseConfFile(filename string) (Config, error) {
 	return c, nil
 }
 
-func writeConfFile(c Config) {
+func SaveToFile(filename string, c Config) error {
+	raw, err := yaml.Marshal(c)
+	if err != nil {
+		return fmt.Errorf("error marshalling config: %w", err)
+	}
+	if err := ioutil.WriteFile(filename, raw, 0644); err != nil {
+		return fmt.Errorf("error writing file %s: %w", filename, err)
+	}
+	return nil
 }
 
 // Context returns a new context from ctx with c attached
@@ -42,7 +50,7 @@ func (c Config) Context(ctx context.Context) context.Context {
 	return context.WithValue(ctx, configkey, c)
 }
 
-func ConfigFromContext(ctx context.Context) Config {
+func FromContext(ctx context.Context) Config {
 	c := ctx.Value(configkey)
 	config, ok := c.(Config)
 	if ok {
