@@ -2,6 +2,7 @@ package irc
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/adamhassel/bender/internal/factoids"
@@ -16,17 +17,23 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 		c.Privmsg(channel, "You said "+msg)
 	}
 
+	factoidconf, err := factoids.ParseConfFile(factoids.DefaultConfFile)
+	if err != nil {
+		log.Print(err)
+	}
+	ctx = factoidconf.Context(ctx)
+
 	if strings.HasPrefix(msg, "!! ") {
 		reply := factoids.Store(msg, e.Nick)
 		c.Privmsg(channel, reply)
 	}
 
 	if strings.HasPrefix(msg, "!? ") {
-		reply, action := factoids.Lookup(msg)
+		reply, action := factoids.Lookup(ctx, msg)
 		SendReply(c, channel, reply, action)
 	}
 	if msg == "!random" {
-		reply, action := factoids.Lookup(factoids.RandomKey())
+		reply, action := factoids.Lookup(ctx, factoids.RandomKey())
 		SendReply(c, channel, reply, action)
 	}
 }

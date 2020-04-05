@@ -12,7 +12,7 @@ import (
 )
 
 func InitBot(ctx context.Context) error {
-	conf := config.ConfigFromContext(ctx)
+	conf := config.FromContext(ctx)
 	var wg sync.WaitGroup
 	for server, sconf := range conf.Servers {
 		irccon := irc.IRC(sconf.Identity.Nick, sconf.Identity.Name)
