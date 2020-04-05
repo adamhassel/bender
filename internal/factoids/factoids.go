@@ -5,23 +5,29 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // NewReplyString adds a custom reply string to the list of reply strings
-// TODO: save to config file
+// TODO: generalize config file read/write/parse
+// TODO: switch to toml for config
 func NewReplyString(ctx *context.Context, msg string) string {
-	c := ConfigFromContext(*ctx)
+	c := FromContext(*ctx)
 	replystring := strings.TrimPrefix(msg, "!newreply ")
 	if strings.Count(replystring, "%s") != 2 {
 		return "You need exactly two '%s' captures in your reply"
 	}
 	c.ReplyStrings = append(c.ReplyStrings, replystring)
 	*ctx = c.Context(*ctx)
+	if err := SaveToFile(DefaultConfFile, c); err != nil {
+		logrus.Error(err)
+	}
 	return `OK, I'll use "` + replystring + `"in replies`
 }
 
 // Lookup returns a string to output to the channel, and a bool indicating if it's an action ('/me blabla')
-func Lookup(msg string) (string, bool) {
+func Lookup(ctx context.Context, msg string) (string, bool) {
 	factoidstring := strings.TrimPrefix(msg, "!? ")
 	factoidstring = strings.TrimSpace(factoidstring)
 	factoid, err := get(strings.ToLower(factoidstring))
@@ -36,6 +42,7 @@ func Lookup(msg string) (string, bool) {
 		return strings.TrimPrefix(factoid, "<me> "), true
 	}
 	// pick a random replystring
+	c := FromContext(ctx)
 	reply := c.ReplyStrings.Random()
 
 	return fmt.Sprintf(reply, factoidstring, factoid), false
