@@ -8,6 +8,7 @@ import (
 	"github.com/adamhassel/bender/internal/irc"
 )
 
+// TODO: accept command line arg to specify config file
 const defaultConffile = "conf/conf.yml"
 
 func main() {
