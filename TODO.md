@@ -14,4 +14,4 @@
   - factoids: show additional info
   - factoids: list factoid keywords
   - irc: channel mode enforcing (low priority)
-  - seen db, incl. if posible away db
+  - seen db, incl. if feasible away db
