@@ -2,6 +2,7 @@ package irc
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -32,8 +33,13 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 		reply, action := factoids.Lookup(ctx, msg)
 		SendReply(c, channel, reply, action)
 	}
-	if msg == "!random" {
+
+	switch msg {
+	case "!random":
 		reply, action := factoids.Lookup(ctx, factoids.RandomKey())
+		SendReply(c, channel, reply, action)
+	case "!coffee":
+		reply, action := fmt.Sprintf("pours %s a cup of coffee, straight from the pot", e.Nick), true
 		SendReply(c, channel, reply, action)
 	}
 }
