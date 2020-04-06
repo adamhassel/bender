@@ -20,11 +20,11 @@ func (s StringSet) Exists(value string) bool {
 }
 
 // Slice returns the values of the set as a slice.
-func (s StringSet) Slice() []string {
+func (s StringSet) Slice() StringSlice {
 	if s == nil {
 		return nil
 	}
-	var r = make([]string, len(s))
+	var r = make(StringSlice, len(s))
 	i := 0
 	for k := range s {
 		r[i] = k
