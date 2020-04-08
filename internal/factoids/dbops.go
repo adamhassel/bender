@@ -14,8 +14,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/adamhassel/bender/internal/helpers"
-
-	"gopkg.in/yaml.v2"
 )
 
 // factoids is the data struture used for thread safe in memorystorage of factoids
@@ -71,7 +69,8 @@ func loadDB(filename string) error {
 		return fmt.Errorf("error loading database at %q: %w", err)
 	}
 	factsfromdisk := make(map[string][]factoid)
-	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {
+	//	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {
+	if err := json.Unmarshal(content, &factsfromdisk); err != nil {
 		return fmt.Errorf("error parsing database at %q: %w", err)
 	}
 	f.m.Lock()

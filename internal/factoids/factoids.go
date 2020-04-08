@@ -34,8 +34,8 @@ func Lookup(ctx context.Context, msg string) (string, bool) {
 	if err == ErrNoSuchFact {
 		return fmt.Sprintf("Nobody cares about %s!", factoidstring), false
 	}
-	if strings.HasPrefix(factoid.Value, "<reply> ") {
-		factoid.Value = strings.TrimPrefix(factoid.Value, "<reply> ")
+	if strings.HasPrefix(factoid.Value, "<reply>") {
+		factoid.Value = strings.TrimSpace(strings.TrimPrefix(factoid.Value, "<reply>"))
 		return factoid.Value, false
 	}
 	if strings.HasPrefix(factoid.Value, "<me> ") {
@@ -61,7 +61,8 @@ func Store(msg string, from string) string {
 		}
 	}
 	key, val := strings.TrimSpace(f[0]), strings.TrimSpace(f[1])
-	fact := factoid{Value: val, Origin: from, SplitWord: splitword, Created: time.Now().Round(time.Second)}
+	now := time.Now().Round(time.Second)
+	fact := factoid{Value: val, Origin: from, SplitWord: splitword, Created: &now}
 	if err := set(strings.ToLower(key), fact); err != nil {
 		switch err {
 		case ErrFactAlreadyExists:
