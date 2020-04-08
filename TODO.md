@@ -10,7 +10,7 @@
 ```
 * Abstract config handling to avoid code duplucation
 * Features:
-  - Beatme
+  - ~Beatme~
   - weather
   - calculator
   - bar
