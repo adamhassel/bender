@@ -3,8 +3,10 @@ package irc
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/adamhassel/bender/internal/config"
 
@@ -61,4 +63,24 @@ func stringInSlice(s string, sl []string) bool {
 		}
 	}
 	return false
+}
+
+// RequestReply abstracts sending a command to the IRC server and listening for a reply. Eventcodes must match the
+// commands. See https://www.alien.net.au/irc/irc2numerics.html
+func RequestReply(c *irc.Connection, eventcode, command string) (string, error) {
+	reply := make(chan string, 1)
+	id := c.AddCallback(eventcode, func(e *irc.Event) {
+		reply <- e.Message()
+		defer close(reply)
+	})
+	defer c.RemoveCallback(eventcode, id)
+	c.SendRaw(command)
+	var r string
+	select {
+	case r = <-reply:
+	case <-time.NewTicker(5 * time.Second).C:
+		return "", errors.New("timeout getting command response")
+	}
+	c.Log.Printf("%+v", r)
+	return r, nil
 }
