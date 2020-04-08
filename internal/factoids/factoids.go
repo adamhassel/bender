@@ -32,7 +32,7 @@ func Lookup(ctx context.Context, msg string) (string, bool) {
 	factoidstring = strings.TrimSpace(factoidstring)
 	factoid, err := get(strings.ToLower(factoidstring))
 	if err == ErrNoSuchFact {
-		return fmt.Sprintf("Nobody cares about %q!", factoidstring), false
+		return fmt.Sprintf("Nobody cares about %s!", factoidstring), false
 	}
 	if strings.HasPrefix(factoid.Value, "<reply> ") {
 		factoid.Value = strings.TrimPrefix(factoid.Value, "<reply> ")

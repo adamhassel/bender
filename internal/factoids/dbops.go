@@ -2,6 +2,7 @@
 package factoids
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -164,11 +165,12 @@ func syncToDisk() error {
 	for k, vs := range f.v {
 		factsfordisk[k] = vs.Slice()
 	}
-	ymldata, err := yaml.Marshal(factsfordisk)
+	jsondata, err := json.Marshal(factsfordisk)
+	//ymldata, err := yaml.Marshal(factsfordisk)
 	if err != nil {
 		return fmt.Errorf("error marshalling DB: %w", err)
 	}
-	if err := ioutil.WriteFile(f.db, ymldata, 0644); err != nil {
+	if err := ioutil.WriteFile(f.db, jsondata, 0644); err != nil {
 		return fmt.Errorf("error syncing to file %q: %w", err)
 	}
 	return nil

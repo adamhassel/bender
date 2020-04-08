@@ -6,10 +6,10 @@ import (
 )
 
 type factoid struct {
-	Value     string    `yaml:"value"`
-	Origin    string    `yaml:"origin"`
-	SplitWord string    `yaml:"splitword"`
-	Created   time.Time `yaml:"created`
+	Value     string    `yaml:"value" json:"value"`
+	Origin    string    `yaml:"origin,omitempty" json:"origin,omitempty"`
+	SplitWord string    `yaml:"splitword,omitempty" json:"splitword,omitempty"`
+	Created   time.Time `yaml:"created,omitempty" json:"created,omitempty"`
 }
 
 type FactoidSet map[string]factoid
