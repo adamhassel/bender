@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/adamhassel/bender/internal/factoids"
 	"github.com/adamhassel/bender/internal/helpers"
@@ -26,45 +25,47 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	}
 	ctx = factoidconf.Context(ctx)
 
-	if strings.HasPrefix(msg, "!! ") {
-		reply := factoids.Store(msg, e.Nick)
+	command, err := ParseCommand(ctx, msg)
+	if err != nil {
+		return
+	}
+
+	switch command.Command {
+	case "!":
+		reply := factoids.Store(command.Argument, e.Nick)
 		c.Privmsg(channel, reply)
-	}
-
-	if strings.HasPrefix(msg, "!? ") {
-		reply, action := factoids.Lookup(ctx, msg)
+	case "?":
+		reply, action := factoids.Lookup(ctx, command.Argument)
 		SendReply(c, channel, reply, action)
-	}
-
-	switch msg {
-	case "!random":
+	case "random":
 		reply, action := factoids.Lookup(ctx, factoids.RandomKey())
 		SendReply(c, channel, reply, action)
-	case "!coffee":
-		reply, action := fmt.Sprintf("pours %s a cup of coffee, straight from the pot", e.Nick), true
+	case "coffee":
+		reply, action := fmt.Sprintf("pours %s a cup of hot coffee, straight from the pot", e.Nick), true
 		SendReply(c, channel, reply, action)
-	case "!beatme":
-		// TODO: also do custom reason
-		// TODO: detect if I have +o
-		// TODO: refactor this a bit, it's kinda hacky
-		list := make(chan string, 1)
-		id := c.AddCallback("353", func(e *irc.Event) {
-			list <- e.Message()
-			defer close(list)
-		})
-		defer c.RemoveCallback("353", id)
-		c.SendRaw("NAMES " + channel)
-		var l string
-		select {
-		case l = <-list:
-		case <-time.NewTicker(5 * time.Second).C:
-			SendReply(c, channel, "didn't receive user list in time", false)
+	case "beatme":
+		l, err := RequestReply(c, "353", "NAMES "+channel)
+		if err != nil {
+			SendReply(c, channel, fmt.Sprintf("Error getting user list: %s", err), false)
+			return
 		}
 		users := helpers.NewStringSet(strings.Split(strings.TrimSpace(l), " ")...)
-		users.Delete(c.GetNick())
+
+		// Can we kick anyone?
+		if !users.Exists("@" + c.GetNick()) {
+			SendReply(c, channel, fmt.Sprintf("I am not a channel operator"), false)
+			return
+		}
+
+		// Let's not kick ourself or the channel. Also, we have a '@' now, cause we're channel operator
+		users.Delete("@" + c.GetNick())
+
 		kickme := users.Slice().Random()
-		SendReply(c, channel, "I would have kicked "+kickme+" if I was mean", false)
-		//c.Kick(kickme, channel, "Det har du sikkert fortjent.")
+		if command.Argument == "" {
+			command.Argument = "Det har du sikkert fortjent"
+		}
+		//SendReply(c, channel, fmt.Sprintf("I would have kicked %s if I were mean, while yelling %q", kickme, command.Argument), false)
+		c.Kick(kickme, channel, command.Argument)
 	}
 }
 

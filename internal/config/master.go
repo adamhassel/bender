@@ -14,9 +14,10 @@ import (
 )
 
 type Main struct {
-	Logfile   string    `yaml:"logfile"`
-	LogLevel  string    `yaml:"loglevel"`
-	LogWriter io.Writer `yaml:"-"`
+	Logfile     string    `yaml:"logfile"`
+	LogLevel    string    `yaml:"loglevel"`
+	LogWriter   io.Writer `yaml:"-"`
+	CommandChar string    `yaml:"commandchar"`
 }
 
 type Identity struct {
