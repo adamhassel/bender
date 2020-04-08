@@ -43,6 +43,10 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	case "coffee":
 		reply, action := fmt.Sprintf("pours %s a cup of hot coffee, straight from the pot", e.Nick), true
 		SendReply(c, channel, reply, action)
+	case "buy": // this is the most used !bar feature from old bender, so it's implemented on its own.
+		nick, item := splitBySpace(command.Argument)
+		reply := fmt.Sprintf("gives %s a %s, \"Compliments of %s!\"", nick, item, e.Nick)
+		SendReply(c, channel, reply, true)
 	case "beatme":
 		l, err := RequestReply(c, "353", "NAMES "+channel)
 		if err != nil {
