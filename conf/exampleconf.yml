@@ -1,0 +1,24 @@
+main:
+  logfile: log/bender.log
+  loglevel: debug
+  commandchar: "!"
+  channellogs:
+    channels: ["#mychannel"]
+    root: "channellogs"
+
+# identity is the identity of the bot. Can be overridden in the `servers` section on a per-server basis
+identity:
+  nick: "Bender"
+  name: "Bender Bending Rodriguez"
+  modestring: ""
+
+# servers section defines servers to connect to, and per-server settings
+servers:
+  irc.example.com:
+    network: "IRCNet"
+    port: 6697
+    ssl: true
+    sslskipverify: false
+    password: SuPaHs3Cr1T
+    channels: ["#mychannel", "#myotherchannel"]
+    ignore: ["annoyingotherbot"]
