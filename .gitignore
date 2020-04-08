@@ -3,3 +3,4 @@ bender
 .idea/
 log/
 conf/factoids.yml
+conf/conf.yml
