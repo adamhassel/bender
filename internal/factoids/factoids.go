@@ -34,30 +34,34 @@ func Lookup(ctx context.Context, msg string) (string, bool) {
 	if err == ErrNoSuchFact {
 		return fmt.Sprintf("Nobody cares about %q!", factoidstring), false
 	}
-	if strings.HasPrefix(factoid, "<reply> ") {
-		factoid = strings.TrimPrefix(factoid, "<reply> ")
-		return factoid, false
+	if strings.HasPrefix(factoid.Value, "<reply> ") {
+		factoid.Value = strings.TrimPrefix(factoid.Value, "<reply> ")
+		return factoid.Value, false
 	}
-	if strings.HasPrefix(factoid, "<me> ") {
-		return strings.TrimPrefix(factoid, "<me> "), true
+	if strings.HasPrefix(factoid.Value, "<me> ") {
+		return strings.TrimPrefix(factoid.Value, "<me> "), true
 	}
 	// pick a random replystring
 	c := FromContext(ctx)
 	reply := c.ReplyStrings.Random()
 
-	return fmt.Sprintf(reply, factoidstring, factoid), false
-	//return fmt.Sprintf("Some say that %s is %s", factoidstring, factoid), false
+	return fmt.Sprintf(reply, factoidstring, factoid.Value), false
 }
 
 // Store saves a factoid to the database
 func Store(msg string, from string) string {
 	factoidstring := strings.TrimPrefix(msg, "!! ")
+	splitword := "is"
 	f := strings.SplitN(factoidstring, " is ", 2)
 	if len(f) != 2 {
-		return "You gotta format it right, moron."
+		splitword = "er"
+		f = strings.SplitN(factoidstring, " er ", 2)
+		if len(f) != 2 {
+			return "You gotta format it right, moron."
+		}
 	}
 	key, val := strings.TrimSpace(f[0]), strings.TrimSpace(f[1])
-	fact := factoid{Value: val, Origin: from, Created: time.Now().Round(time.Second)}
+	fact := factoid{Value: val, Origin: from, SplitWord: splitword, Created: time.Now().Round(time.Second)}
 	if err := set(strings.ToLower(key), fact); err != nil {
 		switch err {
 		case ErrFactAlreadyExists:
@@ -68,5 +72,5 @@ func Store(msg string, from string) string {
 		return err.Error()
 
 	}
-	return fmt.Sprintf("OK, %q is %q", key, val)
+	return fmt.Sprintf("OK, %q %s %q", key, splitword, val)
 }

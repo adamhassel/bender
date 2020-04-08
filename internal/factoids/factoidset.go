@@ -1,11 +1,15 @@
 package factoids
 
-import "time"
+import (
+	"math/rand"
+	"time"
+)
 
 type factoid struct {
-	Value   string    `yaml:"value"`
-	Origin  string    `yaml:"origin"`
-	Created time.Time `yaml:"created`
+	Value     string    `yaml:"value"`
+	Origin    string    `yaml:"origin"`
+	SplitWord string    `yaml:"splitword"`
+	Created   time.Time `yaml:"created`
 }
 
 type FactoidSet map[string]factoid
@@ -61,4 +65,17 @@ func (f FactoidSet) Delete(val string) {
 		return
 	}
 	delete(f, val)
+}
+
+func (f FactoidSet) Random() factoid {
+	if len(f) == 0 {
+		return factoid{}
+	}
+	s := make([]string, len(f))
+	i := 0
+	for k := range f {
+		s[i] = k
+		i++
+	}
+	return f[s[rand.Intn(len(s))]]
 }

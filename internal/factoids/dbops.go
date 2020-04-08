@@ -101,15 +101,14 @@ func set(key string, value factoid) error {
 }
 
 // get retrieves a random fact from the factoid DB
-func get(key string) (string, error) {
-	vals, err := f.getall(key)
-	if err != nil || len(vals) == 0 {
-		return "", err
+func get(key string) (factoid, error) {
+	if facts, ok := f.v[key]; ok {
+		return facts.Random(), nil
 	}
-	// pick a random fact from the list
-	return helpers.StringSlice(vals).Random(), nil
+	return factoid{}, ErrNoSuchFact
 }
 
+// getall returns all factoids for a key
 func (f *factoids) getall(key string) ([]string, error) {
 	f.m.Lock()
 	vals, ok := f.v[key]
