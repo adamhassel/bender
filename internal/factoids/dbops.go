@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/rand"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -180,6 +181,7 @@ func (f *factoids) listFacts(rex *regexp.Regexp) []string {
 			rv = append(rv, strings.TrimSpace(k))
 		}
 	}
+	sort.Strings(rv)
 	return rv
 }
 

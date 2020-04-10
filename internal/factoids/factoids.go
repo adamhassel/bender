@@ -108,7 +108,7 @@ func List(start string) (string, error) {
 	if len(results) == 0 {
 		return "No results found", nil
 	}
-	return fmt.Sprintf("I have these facts matching %s: %s", start, strings.Join(results, ",")), nil
+	return fmt.Sprintf("I have these facts matching %s: %s", start, strings.Join(results, ", ")), nil
 }
 
 // Store saves a factoid to the database
