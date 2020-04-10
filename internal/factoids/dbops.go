@@ -153,14 +153,6 @@ func (f *factoids) search(rex *regexp.Regexp, max int) ([]fullfactoid, int) {
 	rv := make([]fullfactoid, 0, max)
 	additional := 0
 	for k, v := range f.v {
-		/*if rex.MatchString(k) {
-			if len(rv) >= max {
-				additional++
-				continue
-			}
-			rv = append(rv, fullfactoid{Keyword: k, factoid: v})
-			continue
-		}*/
 		for _, fact := range v.Slice() {
 			if rex.MatchString(fact.Value) {
 				if len(rv) >= max {
@@ -181,8 +173,14 @@ func (f *factoids) delete(key string) {
 }
 
 // listFacts lists all keys mathcing `substring`
-func listFacts(substr string) ([]string, error) {
-	return nil, nil
+func (f *factoids) listFacts(rex *regexp.Regexp) []string {
+	rv := make([]string, 0, 10)
+	for k := range f.v {
+		if rex.MatchString(k) {
+			rv = append(rv, strings.TrimSpace(k))
+		}
+	}
+	return rv
 }
 
 // sync syncs the in memory DB to disk. THe caller should lock!
