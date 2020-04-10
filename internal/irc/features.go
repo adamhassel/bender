@@ -42,13 +42,21 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 		reply, action := factoids.Lookup(ctx, factoids.RandomKey())
 		SendReply(c, channel, reply, action)
 	case "finfo":
-		lastfact := factoids.Lastfact()
-		if lastfact.Value == "" {
-			SendReply(c, channel, "I haven't looked up anything yet", false)
+		SendReply(c, channel, factoids.Lastfact().Info(), false)
+	case "search":
+		if command.Argument == "" {
+			SendReply(c, channel, "You gotta tell me what to look for, bub", false)
 			return
 		}
-		lastfact.FillDefault()
-		SendReply(c, channel, fmt.Sprintf("\"%s => %s\" was created on %s by %s", lastfact.Keyword, lastfact.Value, lastfact.Created.Format(time.RFC822), lastfact.Origin), false)
+		results, err := factoids.Search(command.Argument, 5)
+		if err != nil {
+			SendReply(c, channel, err.Error(), false)
+			return
+		}
+		for _, s := range results {
+			SendReply(c, channel, s, false)
+			time.Sleep(200 * time.Millisecond)
+		}
 	case "coffee":
 		reply, action := fmt.Sprintf("pours %s a cup of hot coffee, straight from the pot", e.Nick), true
 		SendReply(c, channel, reply, action)

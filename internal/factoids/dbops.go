@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -145,6 +146,32 @@ func Delete(key, substr string) error {
 	}
 	f.m.Unlock()
 	return nil
+}
+
+// Search returns a slice of maximum of `max` factoids and an integer with the number of additional facts found
+func (f *factoids) search(rex *regexp.Regexp, max int) ([]fullfactoid, int) {
+	rv := make([]fullfactoid, 0, max)
+	additional := 0
+	for k, v := range f.v {
+		/*if rex.MatchString(k) {
+			if len(rv) >= max {
+				additional++
+				continue
+			}
+			rv = append(rv, fullfactoid{Keyword: k, factoid: v})
+			continue
+		}*/
+		for _, fact := range v.Slice() {
+			if rex.MatchString(fact.Value) {
+				if len(rv) >= max {
+					additional++
+					continue
+				}
+				rv = append(rv, fullfactoid{Keyword: k, factoid: fact})
+			}
+		}
+	}
+	return rv, additional
 }
 
 func (f *factoids) delete(key string) {

@@ -3,6 +3,7 @@ package factoids
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -32,13 +33,21 @@ func Lastfact() fullfactoid {
 	return lastfact
 }
 
-func (f *fullfactoid) FillDefault() {
-	if f.Origin == "" {
-		f.Origin = "unknown"
+// Info formats an info string about f
+func (f fullfactoid) Info() string {
+	info := fmt.Sprintf("\"%s => %s\" was created", f.Keyword, f.Value)
+	switch {
+	case f == fullfactoid{}:
+		info = "I haven't looked up any facts yet"
+	case f.Origin != "":
+		info = fmt.Sprintf("%s by %s", info, f.Origin)
+		fallthrough
+	case f.Created != nil:
+		info = fmt.Sprintf("%s on %s", info, f.Created.Format(time.RFC822))
+	case f.Origin == "" && f.Created == nil:
+		info = fmt.Sprintf("I don't have any information on \"%s => %s\"", f.Keyword, f.Value)
 	}
-	if f.Created == nil {
-		f.Created = &time.Time{}
-	}
+	return info
 }
 
 // Lookup returns a string to output to the channel, and a bool indicating if it's an action ('/me blabla')
@@ -61,6 +70,33 @@ func Lookup(ctx context.Context, msg string) (string, bool) {
 	reply := c.ReplyStrings.Random()
 	lastfact = fullfactoid{factoidstring, factoid}
 	return fmt.Sprintf(reply, factoidstring, factoid.Value), false
+}
+
+// Search will look through the entire database, both keywords and facts, for the regular expression in rex. It will
+// return a formatted string to output toi a channel, and an error if something went wrong. It is not an error that
+// nothing was found
+func Search(rex string, maxresults int) ([]string, error) {
+	re, err := regexp.Compile(rex)
+	if err != nil {
+		return nil, err
+	}
+	results, additional := f.search(re, maxresults)
+	if len(results) == 0 {
+		return []string{"No results found"}, nil
+	}
+	reslen := len(results) + 1
+	if additional > 0 {
+		reslen++
+	}
+	rv := make([]string, 0, reslen)
+	rv = append(rv, "Check out what I found from your search:")
+	for _, f := range results {
+		rv = append(rv, fmt.Sprintf("%q => %q", f.Keyword, f.Value))
+	}
+	if additional > 0 {
+		rv = append(rv, fmt.Sprintf("... and %d more results not displayed", additional))
+	}
+	return rv, nil
 }
 
 // Store saves a factoid to the database
