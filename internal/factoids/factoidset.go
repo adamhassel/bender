@@ -12,6 +12,11 @@ type factoid struct {
 	Created   *time.Time `yaml:"created,omitempty" json:"created,omitempty"`
 }
 
+type fullfactoid struct {
+	Keyword string
+	factoid
+}
+
 type FactoidSet map[string]factoid
 
 func NewFactoidSet(values ...factoid) FactoidSet {

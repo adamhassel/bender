@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var lastfact fullfactoid
+
 // NewReplyString adds a custom reply string to the list of reply strings
 // TODO: generalize config file read/write/parse
 // TODO: switch to toml for config
@@ -24,6 +26,19 @@ func NewReplyString(ctx *context.Context, msg string) string {
 		logrus.Error(err)
 	}
 	return `OK, I'll use "` + replystring + `"in replies`
+}
+
+func Lastfact() fullfactoid {
+	return lastfact
+}
+
+func (f *fullfactoid) FillDefault() {
+	if f.Origin == "" {
+		f.Origin = "unknown"
+	}
+	if f.Created == nil {
+		f.Created = &time.Time{}
+	}
 }
 
 // Lookup returns a string to output to the channel, and a bool indicating if it's an action ('/me blabla')
@@ -44,7 +59,7 @@ func Lookup(ctx context.Context, msg string) (string, bool) {
 	// pick a random replystring
 	c := FromContext(ctx)
 	reply := c.ReplyStrings.Random()
-
+	lastfact = fullfactoid{factoidstring, factoid}
 	return fmt.Sprintf(reply, factoidstring, factoid.Value), false
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/adamhassel/bender/internal/factoids"
 	"github.com/adamhassel/bender/internal/helpers"
@@ -40,6 +41,14 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	case "random":
 		reply, action := factoids.Lookup(ctx, factoids.RandomKey())
 		SendReply(c, channel, reply, action)
+	case "finfo":
+		lastfact := factoids.Lastfact()
+		if lastfact.Value == "" {
+			SendReply(c, channel, "I haven't looked up anything yet", false)
+			return
+		}
+		lastfact.FillDefault()
+		SendReply(c, channel, fmt.Sprintf("\"%s => %s\" was created on %s by %s", lastfact.Keyword, lastfact.Value, lastfact.Created.Format(time.RFC822), lastfact.Origin), false)
 	case "coffee":
 		reply, action := fmt.Sprintf("pours %s a cup of hot coffee, straight from the pot", e.Nick), true
 		SendReply(c, channel, reply, action)
