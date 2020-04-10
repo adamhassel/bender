@@ -99,6 +99,18 @@ func Search(rex string, maxresults int) ([]string, error) {
 	return rv, nil
 }
 
+func List(start string) (string, error) {
+	re, err := regexp.Compile("^" + start)
+	if err != nil {
+		return "", err
+	}
+	results := f.listFacts(re)
+	if len(results) == 0 {
+		return "No results found", nil
+	}
+	return fmt.Sprintf("I have these facts matching %s: %s", start, strings.Join(results, ",")), nil
+}
+
 // Store saves a factoid to the database
 func Store(msg string, from string) string {
 	factoidstring := strings.TrimPrefix(msg, "!! ")

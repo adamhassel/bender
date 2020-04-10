@@ -43,6 +43,17 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 		SendReply(c, channel, reply, action)
 	case "finfo":
 		SendReply(c, channel, factoids.Lastfact().Info(), false)
+	case "list":
+		if command.Argument == "" {
+			SendReply(c, channel, "You gotta tell me what to look for, bub", false)
+			return
+		}
+		results, err := factoids.List(command.Argument)
+		if err != nil {
+			SendReply(c, channel, err.Error(), false)
+			return
+		}
+		SendReply(c, channel, results, false)
 	case "search":
 		if command.Argument == "" {
 			SendReply(c, channel, "You gotta tell me what to look for, bub", false)
