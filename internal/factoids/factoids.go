@@ -62,8 +62,10 @@ func Lookup(ctx context.Context, msg string) (string, bool) {
 		factoid.Value = strings.TrimSpace(strings.TrimPrefix(factoid.Value, "<reply>"))
 		return factoid.Value, false
 	}
-	if strings.HasPrefix(factoid.Value, "<me> ") {
-		return strings.TrimPrefix(factoid.Value, "<me> "), true
+	for _, p := range []string{"<me>", "<action>"} {
+		if strings.HasPrefix(factoid.Value, p) {
+			return strings.TrimSpace(strings.TrimPrefix(factoid.Value, p)), true
+		}
 	}
 	// pick a random replystring
 	c := FromContext(ctx)
