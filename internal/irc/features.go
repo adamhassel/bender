@@ -36,10 +36,10 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 		reply := factoids.Store(command.Argument, e.Nick)
 		c.Privmsg(channel, reply)
 	case "?":
-		reply, action := factoids.Lookup(ctx, command.Argument)
+		reply, action := factoids.Lookup(ctx, e.Nick, command.Argument)
 		SendReply(c, channel, reply, action)
 	case "random":
-		reply, action := factoids.Lookup(ctx, factoids.RandomKey())
+		reply, action := factoids.Lookup(ctx, e.Nick, factoids.RandomKey())
 		SendReply(c, channel, reply, action)
 	case "finfo":
 		SendReply(c, channel, factoids.Lastfact().Info(), false)

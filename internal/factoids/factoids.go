@@ -50,14 +50,17 @@ func (f fullfactoid) Info() string {
 	return info
 }
 
-// Lookup returns a string to output to the channel, and a bool indicating if it's an action ('/me blabla')
-func Lookup(ctx context.Context, msg string) (string, bool) {
+// Lookup returns a string to output to the channel, and a bool indicating if it's an action ('/me blabla'). Nick is the
+// nickname of the asker.
+func Lookup(ctx context.Context, nick, msg string) (string, bool) {
 	factoidstring := strings.TrimPrefix(msg, "!? ")
 	factoidstring = strings.TrimSpace(factoidstring)
 	factoid, err := get(strings.ToLower(factoidstring))
 	if err == ErrNoSuchFact {
 		return fmt.Sprintf("Nobody cares about %s!", factoidstring), false
 	}
+	// substitute $nick for nick of whoever asked
+	factoid.Value = strings.ReplaceAll(factoid.Value, "$nick", nick)
 	if strings.HasPrefix(factoid.Value, "<reply>") {
 		factoid.Value = strings.TrimSpace(strings.TrimPrefix(factoid.Value, "<reply>"))
 		return factoid.Value, false
