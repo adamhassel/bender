@@ -16,9 +16,6 @@ import (
 func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	msg := e.Message()
 	channel := e.Arguments[0]
-	if strings.HasPrefix(msg, c.GetNick()) {
-		c.Privmsg(channel, "You said "+msg)
-	}
 
 	factoidconf, err := factoids.ParseConfFile(factoids.DefaultConfFile)
 	if err != nil {
