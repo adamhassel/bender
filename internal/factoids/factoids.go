@@ -120,9 +120,11 @@ func List(start string) (string, error) {
 func Store(msg string, from string) string {
 	factoidstring := strings.TrimPrefix(msg, "!! ")
 	splitword := "is"
+	lang := "en"
 	f := strings.SplitN(factoidstring, " is ", 2)
 	if len(f) != 2 {
 		splitword = "er"
+		lang := "da"
 		f = strings.SplitN(factoidstring, " er ", 2)
 		if len(f) != 2 {
 			return "You gotta format it right, moron."
@@ -130,7 +132,7 @@ func Store(msg string, from string) string {
 	}
 	key, val := strings.TrimSpace(f[0]), strings.TrimSpace(f[1])
 	now := time.Now().Round(time.Second)
-	fact := factoid{Value: val, Origin: from, SplitWord: splitword, Created: &now}
+	fact := factoid{Value: val, Origin: from, SplitWord: splitword, Created: &now, Language: lang}
 	if err := set(strings.ToLower(key), fact); err != nil {
 		switch err {
 		case ErrFactAlreadyExists:
@@ -141,5 +143,6 @@ func Store(msg string, from string) string {
 		return err.Error()
 
 	}
+	lastfact = fullfactoid{key, fact}
 	return fmt.Sprintf("OK, %q %s %q", key, splitword, val)
 }
