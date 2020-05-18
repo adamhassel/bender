@@ -9,6 +9,7 @@ type factoid struct {
 	Value     string     `yaml:"value" json:"value"`
 	Origin    string     `yaml:"origin,omitempty" json:"origin,omitempty"`
 	SplitWord string     `yaml:"splitword,omitempty" json:"splitword,omitempty"`
+	Language  string     `yaml:"lang,omitempty" json:"lang,omitempty"`
 	Created   *time.Time `yaml:"created,omitempty" json:"created,omitempty"`
 }
 
