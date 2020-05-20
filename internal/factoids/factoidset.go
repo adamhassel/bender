@@ -18,6 +18,12 @@ type fullfactoid struct {
 	factoid
 }
 
+// key is a keyword and factoid-wide attributes
+type key struct {
+	keyword string
+	frozen  bool
+}
+
 type FactoidSet map[string]factoid
 
 func NewFactoidSet(values ...factoid) FactoidSet {
