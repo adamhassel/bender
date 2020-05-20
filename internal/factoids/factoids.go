@@ -124,7 +124,7 @@ func Store(msg string, from string) string {
 	f := strings.SplitN(factoidstring, " is ", 2)
 	if len(f) != 2 {
 		splitword = "er"
-		lang := "da"
+		lang = "da"
 		f = strings.SplitN(factoidstring, " er ", 2)
 		if len(f) != 2 {
 			return "You gotta format it right, moron."
