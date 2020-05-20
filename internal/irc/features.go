@@ -86,6 +86,14 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 			return
 		}
 
+		// If it ain't friday in either CA or DK, kick whoever beatme'd.
+		CAnow := time.Now().In(time.LoadLocation("America/Los_Angeles"))
+		DKnow := time.Now().In(time.LoadLocation("Europe/Copenhagen"))
+		if CAnow.Weekday() != time.Friday && DKnow.Weekday() != time.Friday {
+			c.Kick(e.Nick, channel, "Det er ikke fredag, tåbe.")
+			return
+		}
+
 		// Let's not kick ourself or the channel. Also, we have a '@' now, cause we're channel operator
 		users.Delete("@" + c.GetNick())
 
