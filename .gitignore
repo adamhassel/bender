@@ -5,3 +5,4 @@ log/
 db/
 conf/factoids.yml
 conf/conf.yml
+*.so
