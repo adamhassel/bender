@@ -68,7 +68,7 @@ func loadDB(filename string) error {
 	f.db = filename
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return fmt.Errorf("error loading database at %q: %w", err)
+		return fmt.Errorf("error loading database at %q: %w", filename, err)
 	}
 	factsfromdisk := make(map[string][]factoid)
 	//	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {

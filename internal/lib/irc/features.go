@@ -107,7 +107,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	default: // Check plugins
 		r, err := plugins.Execute(command.Command, strings.Split(command.Argument, " "), e)
 		if err != nil {
-			SendReply(c, channel, err.Error(), false)
+			log.Print(err)
 			return
 		}
 		SendReply(c, channel, r.Message, r.Action)
