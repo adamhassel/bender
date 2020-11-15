@@ -4,6 +4,7 @@ package plugins
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"plugin"
 
 	irc "github.com/thoj/go-ircevent"
@@ -31,7 +32,7 @@ func loadPlugins(pluginconf map[string]string) error {
 	for pluginfile, conffile := range pluginconf {
 		p, err := plugin.Open(pluginfile)
 		if err != nil {
-			return fmt.Errorf("error loading pluigin %s: %w", pluginfile, err)
+			return fmt.Errorf("error loading plugin %s: %w", pluginfile, err)
 		}
 		config, err := loadPluginConf(conffile)
 		if err != nil {
@@ -45,12 +46,13 @@ func loadPlugins(pluginconf map[string]string) error {
 			if commands == nil {
 				commands = make(map[string]pluginfunc)
 			}
-			if c, ok := sym.(pluginfunc); ok {
+			if c, ok := sym.(func([]string, *irc.Event) (string, bool)); ok {
 				commands[command] = c
 				continue
 			}
 			return fmt.Errorf("symbol %q does not match signature", f)
 		}
+		log.Printf("Loaded plugin %q", pluginfile)
 	}
 	return nil
 }
