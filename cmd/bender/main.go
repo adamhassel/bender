@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/adamhassel/bender/internal/config"
-	"github.com/adamhassel/bender/internal/irc"
+	"github.com/adamhassel/bender/internal/lib/irc"
 )
 
 // TODO: accept command line arg to specify config file
