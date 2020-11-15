@@ -44,7 +44,6 @@ func InitBot(ctx context.Context) error {
 		err := irccon.Connect(conf.ServerPort(server))
 		if err != nil {
 			return fmt.Errorf("error connecting to IRC server %q: %w", server, err)
-			continue
 		}
 		wg.Add(1)
 		go func(i *irc.Connection) {
