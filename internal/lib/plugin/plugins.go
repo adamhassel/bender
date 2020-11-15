@@ -47,6 +47,9 @@ func loadPlugins(pluginconf map[string]string) error {
 				commands = make(map[string]pluginfunc)
 			}
 			if c, ok := sym.(func([]string, *irc.Event) (string, bool)); ok {
+				if _, ok := commands[command]; ok {
+					return fmt.Errorf("command name clash: %q is already defined", command)
+				}
 				commands[command] = c
 				continue
 			}
