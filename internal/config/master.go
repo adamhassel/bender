@@ -40,6 +40,7 @@ type Config struct {
 	Main     Main                  `yaml:"main"`
 	Identity Identity              `yaml:"identity"`
 	Servers  map[string]ServerOpts `yaml:"servers"`
+	Plugins  map[string]string     `yaml:"plugins"`
 }
 
 type ctxconf int

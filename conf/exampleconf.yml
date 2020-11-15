@@ -22,3 +22,6 @@ servers:
     password: SuPaHs3Cr1T
     channels: ["#mychannel", "#myotherchannel"]
     ignore: ["annoyingotherbot"]
+
+plugins:
+  example_plugin.so: example_plugin_conf.yml
