@@ -45,7 +45,7 @@ func Example...
 and the command you want to bind to this function is `command`, then your coinfig YAML file would simply be
 
 ```yaml
-command:Example
+command: Example
 ```
 Note that case matters. And the command function MUST be exported.
 
