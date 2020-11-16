@@ -6,7 +6,7 @@ import (
 
 	"github.com/adamhassel/bender/internal/config"
 	"github.com/adamhassel/bender/internal/lib/irc"
-	plugins "github.com/adamhassel/bender/internal/lib/plugin"
+	plugins "github.com/adamhassel/bender/internal/lib/plugins"
 )
 
 // TODO: accept command line arg to specify config file

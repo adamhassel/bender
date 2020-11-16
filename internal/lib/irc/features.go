@@ -9,7 +9,7 @@ import (
 
 	"github.com/adamhassel/bender/internal/factoids"
 	"github.com/adamhassel/bender/internal/helpers"
-	plugins "github.com/adamhassel/bender/internal/lib/plugin"
+	plugins "github.com/adamhassel/bender/internal/lib/plugins"
 	irc "github.com/thoj/go-ircevent"
 )
 
@@ -24,8 +24,19 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	}
 	ctx = factoidconf.Context(ctx)
 
+	// TODO: this structure is ugly
 	command, err := ParseCommand(ctx, msg)
 	if err != nil {
+		if err == ErrNotCommand {
+			replies, err := plugins.Matchers(msg, e)
+			if err != nil {
+				log.Print(err)
+				return
+			}
+			for _, r := range replies {
+				SendReply(c, channel, r.Message, r.Action)
+			}
+		}
 		return
 	}
 
