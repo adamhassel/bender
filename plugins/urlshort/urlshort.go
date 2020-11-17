@@ -18,6 +18,7 @@ const bitlyAPIUrl = "https://api-ssl.bitly.com/v4/shorten"
 
 var Matchers = []string{"UrlShort"}
 var apikey string
+var minlen int
 
 func UrlShort(msg string, e *irc.Event) (string, bool) {
 	if apikey == "" {
@@ -27,6 +28,9 @@ func UrlShort(msg string, e *irc.Event) (string, bool) {
 	urls := m.FindAllString(msg, -1)
 	shorts := make([]string, 0, len(urls))
 	for _, url := range urls {
+		if len(url) < minlen {
+			continue
+		}
 		link, err := bitlyShortUrl(url)
 		if err != nil {
 			log.Printf("error looking up url %q: %s", url, err)
@@ -46,6 +50,15 @@ func Configure(c map[interface{}]interface{}) error {
 	apikey, ok = key.(string)
 	if !ok {
 		return errors.New("invalid apikey format")
+	}
+	len, ok := c["minlen"]
+	if !ok {
+		// not configured? No min len
+		return nil
+	}
+	minlen, ok = len.(int)
+	if !ok {
+		return errors.New("invalid minlen format")
 	}
 	return nil
 }
