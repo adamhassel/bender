@@ -49,6 +49,17 @@ command: Example
 ```
 Note that case matters. And the command function MUST be exported.
 
+If your plugin requires extra configuration, you can keep that in a separate `config` section, and load that inside your
+plugin by providing an exported function, `Configure(v interface{}) error`, which will be given a
+`map[string]interface{}` with the configuration found upon startup.
+
+```yaml
+config:
+    option: value
+```
+
+Or just use a different config method altogether and load it however you please. Like I could stop you.
+
 Command functions must have this signature:
 
 ```golang
