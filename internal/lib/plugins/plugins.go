@@ -17,6 +17,13 @@ type Plugin struct {
 	path string
 }
 
+type mss map[string]string
+
+type PluginConf struct {
+	mss
+	Config map[string]interface{} `yaml:"config"`
+}
+
 type pluginFunc func([]string, *irc.Event) (string, bool)
 type matchFunc func(string, *irc.Event) (string, bool)
 type matchFuncs []matchFunc
@@ -35,8 +42,8 @@ var (
 )
 
 // loadPluginConf loads per-plugins configuration
-func loadPluginConf(filename string) (map[string]string, error) {
-	c := make(map[string]string)
+func loadPluginConf(filename string) (map[string]interface{}, error) {
+	c := make(map[string]interface{})
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %q: %w", filename, err)
@@ -58,7 +65,16 @@ func loadPlugins(pluginConf map[string]string) error {
 			return fmt.Errorf("error loading plugins config: %s: %w", confFile, err)
 		}
 		for command, f := range config {
-			sym, err := p.Lookup(f)
+			val, ok := f.(string)
+			if !ok {
+				if command == "config" {
+					if err := setPluginConf(p, f); err != nil {
+						log.Printf("error configuring plugin %q: %s", pluginFile, err)
+					}
+				}
+				continue
+			}
+			sym, err := p.Lookup(val)
 			if err != nil {
 				return fmt.Errorf("symbol %q lookup error: %w", f, err)
 			}
@@ -109,6 +125,23 @@ func configureMatchers(p *Plugin) error {
 		}
 	}
 	return nil
+}
+
+// setPluginConf if called if plugin-specific configuration is found
+func setPluginConf(p *plugin.Plugin, conf interface{}) error {
+	c, ok := conf.(map[interface{}]interface{})
+	if !ok {
+		return fmt.Errorf("invalid plugin configuration: %T", conf)
+	}
+	cf, err := p.Lookup("Configure")
+	if err != nil {
+		return errors.New("configuration provided, but no Configure function")
+	}
+	f, ok := cf.(func(map[interface{}]interface{}) error)
+	if !ok {
+		return fmt.Errorf("\"Configure\" function has wrong signature: %T", cf)
+	}
+	return f(c)
 }
 
 // LoadPlugins loads plugins and their configuration into memory
