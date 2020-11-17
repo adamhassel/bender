@@ -73,7 +73,7 @@ func loadDB(filename string) error {
 	factsfromdisk := make(map[string][]factoid)
 	//	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {
 	if err := json.Unmarshal(content, &factsfromdisk); err != nil {
-		return fmt.Errorf("error parsing database at %q: %w", err)
+		return fmt.Errorf("error parsing database at %q: %w", filename, err)
 	}
 	f.m.Lock()
 	defer f.m.Unlock()
@@ -197,7 +197,7 @@ func syncToDisk() error {
 		return fmt.Errorf("error marshalling DB: %w", err)
 	}
 	if err := ioutil.WriteFile(f.db, jsondata, 0644); err != nil {
-		return fmt.Errorf("error syncing to file %q: %w", err)
+		return fmt.Errorf("error syncing to file %q: %w", f.db, err)
 	}
 	return nil
 }
