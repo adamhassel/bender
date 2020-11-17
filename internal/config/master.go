@@ -51,7 +51,7 @@ func InitLogger(config *Config) {
 	logger := logrus.New()
 	level, err := logrus.ParseLevel(config.Main.LogLevel)
 	if err != nil {
-		fmt.Printf("unknown loglevel %q, defaulting to 'debug'")
+		fmt.Printf("unknown loglevel %q, defaulting to 'debug'", level)
 		level = logrus.DebugLevel
 	}
 	logger.Out = os.Stderr
