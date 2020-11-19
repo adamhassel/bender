@@ -9,14 +9,9 @@
     keyword => fact1 | fact2 | fact3
 ```
 * Abstract config handling to avoid code duplucation
-* Features:
-  - ~Beatme~
+* Features/plugins:
   - weather
   - calculator
   - bar
-  - ~factoids: reverse lookup~
-  - ~factoids: show additional info~
-  - ~factoids: list factoid keywords~
   - irc: channel mode enforcing (low priority)
   - seen db, incl. if feasible away db
-  - plugins? Overkill for now, probably
