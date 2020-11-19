@@ -68,7 +68,7 @@ func loadPlugins(pluginConf map[string]string) error {
 			val, ok := f.(string)
 			if !ok {
 				if command == "config" {
-					if err := setPluginConf(p, f); err != nil {
+					if err := setPluginConf(p, f.(map[interface{}]interface{})); err != nil {
 						log.Errorf("error configuring plugin %q: %s", pluginFile, err)
 					}
 				}
@@ -128,11 +128,13 @@ func configureMatchers(p *Plugin) error {
 }
 
 // setPluginConf if called if plugin-specific configuration is found
-func setPluginConf(p *plugin.Plugin, conf interface{}) error {
-	c, ok := conf.(map[interface{}]interface{})
-	if !ok {
+func setPluginConf(p *plugin.Plugin, conf map[interface{}]interface{}) error {
+	//c, ok := conf.(map[interface{}]interface{})
+	/*if !ok {
 		return fmt.Errorf("invalid plugin configuration: %T", conf)
 	}
+
+	*/
 	cf, err := p.Lookup("Configure")
 	if err != nil {
 		return errors.New("configuration provided, but no Configure function")
@@ -141,7 +143,7 @@ func setPluginConf(p *plugin.Plugin, conf interface{}) error {
 	if !ok {
 		return fmt.Errorf("\"Configure\" function has wrong signature: %T", cf)
 	}
-	return f(c)
+	return f(conf)
 }
 
 // LoadPlugins loads plugins and their configuration into memory

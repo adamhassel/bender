@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/adamhassel/bender/internal/config"
+	log "github.com/sirupsen/logrus"
 
 	irc "github.com/thoj/go-ircevent"
 )
@@ -19,7 +20,7 @@ func InitBot(ctx context.Context) error {
 	for server, sconf := range conf.Servers {
 		irccon := irc.IRC(sconf.Identity.Nick, sconf.Identity.Name)
 		irccon.Log.SetOutput(conf.Main.LogWriter)
-		irccon.VerboseCallbackHandler = true
+		irccon.VerboseCallbackHandler = conf.Main.LogLevel == "debug"
 		irccon.Debug = conf.Main.LogLevel == "debug"
 		irccon.UseTLS = sconf.SSL
 		irccon.Password = sconf.Password
@@ -80,6 +81,6 @@ func RequestReply(c *irc.Connection, eventcode, command string) (string, error) 
 	case <-time.NewTicker(5 * time.Second).C:
 		return "", errors.New("timeout getting command response")
 	}
-	c.Log.Printf("%+v", r)
+	log.Debugf("%+v", r)
 	return r, nil
 }
