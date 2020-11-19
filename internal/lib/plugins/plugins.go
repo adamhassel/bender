@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"plugin"
 
+	log "github.com/sirupsen/logrus"
 	irc "github.com/thoj/go-ircevent"
 	"gopkg.in/yaml.v2"
 )
@@ -69,7 +69,7 @@ func loadPlugins(pluginConf map[string]string) error {
 			if !ok {
 				if command == "config" {
 					if err := setPluginConf(p, f); err != nil {
-						log.Printf("error configuring plugin %q: %s", pluginFile, err)
+						log.Errorf("error configuring plugin %q: %s", pluginFile, err)
 					}
 				}
 				continue
@@ -96,7 +96,7 @@ func loadPlugins(pluginConf map[string]string) error {
 			}
 			return err
 		}
-		log.Printf("Loaded plugins %q", pluginFile)
+		log.Infof("Loaded plugins %q", pluginFile)
 	}
 	return nil
 }
@@ -105,7 +105,7 @@ func loadPlugins(pluginConf map[string]string) error {
 func configureMatchers(p *Plugin) error {
 	l, err := p.Lookup("Matchers")
 	if err != nil {
-		log.Println("plugin doesn't export matcher functions")
+		log.Warn("plugin doesn't export matcher functions")
 		return ErrNoExportedMatchers
 	}
 	list, ok := l.(*[]string)

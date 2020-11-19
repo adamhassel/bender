@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"regexp"
 	"sort"
@@ -16,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/adamhassel/bender/internal/helpers"
+	log "github.com/sirupsen/logrus"
 )
 
 // factoids is the data struture used for thread safe in memorystorage of factoids
@@ -43,13 +43,13 @@ func init() {
 	f.v = make(map[string]FactoidSet)
 	c, err := ParseConfFile(DefaultConfFile)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	if c.DatabaseFile == "" {
 		c.DatabaseFile = DefaultDBPath
 	}
 	if err := loadDB(c.DatabaseFile); err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	rand.Seed(time.Now().UnixNano())
 }

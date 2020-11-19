@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -48,11 +47,11 @@ type ctxconf int
 const configkey ctxconf = iota
 
 func InitLogger(config *Config) {
-	logger := logrus.New()
-	level, err := logrus.ParseLevel(config.Main.LogLevel)
+	logger := log.New()
+	level, err := log.ParseLevel(config.Main.LogLevel)
 	if err != nil {
 		fmt.Printf("unknown loglevel %q, defaulting to 'debug'", level)
-		level = logrus.DebugLevel
+		level = log.DebugLevel
 	}
 	logger.Out = os.Stderr
 	file, err := os.OpenFile(config.Main.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -63,7 +62,7 @@ func InitLogger(config *Config) {
 	}
 
 	logger.SetLevel(level)
-	logger.Formatter = &logrus.TextFormatter{}
+	logger.Formatter = &log.TextFormatter{}
 	config.Main.LogWriter = logger.Writer()
 	log.SetOutput(logger.Writer())
 }

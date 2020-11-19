@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var lastfact fullfactoid
@@ -24,7 +24,7 @@ func NewReplyString(ctx *context.Context, msg string) string {
 	c.ReplyStrings = append(c.ReplyStrings, replystring)
 	*ctx = c.Context(*ctx)
 	if err := SaveToFile(DefaultConfFile, c); err != nil {
-		logrus.Error(err)
+		log.Error(err)
 	}
 	return `OK, I'll use "` + replystring + `"in replies`
 }
