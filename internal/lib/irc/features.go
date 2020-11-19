@@ -3,13 +3,13 @@ package irc
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/adamhassel/bender/internal/factoids"
 	"github.com/adamhassel/bender/internal/helpers"
-	plugins "github.com/adamhassel/bender/internal/lib/plugins"
+	"github.com/adamhassel/bender/internal/lib/plugins"
+	log "github.com/sirupsen/logrus"
 	irc "github.com/thoj/go-ircevent"
 )
 
@@ -20,7 +20,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 
 	factoidconf, err := factoids.ParseConfFile(factoids.DefaultConfFile)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	ctx = factoidconf.Context(ctx)
 
@@ -30,7 +30,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 		if err == ErrNotCommand {
 			replies, err := plugins.Matchers(msg, e)
 			if err != nil {
-				log.Print(err)
+				log.Error(err)
 				return
 			}
 			for _, r := range replies {
@@ -118,7 +118,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	default: // Check plugins
 		r, err := plugins.Execute(command.Command, strings.Split(command.Argument, " "), e)
 		if err != nil {
-			log.Print(err)
+			log.Error(err)
 			return
 		}
 		SendReply(c, channel, r.Message, r.Action)

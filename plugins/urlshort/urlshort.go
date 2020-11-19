@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	irc "github.com/thoj/go-ircevent"
 	"github.com/valyala/fastjson"
 	"mvdan.cc/xurls/v2"
@@ -20,6 +20,7 @@ var Matchers = []string{"UrlShort"}
 var apikey string
 var minlen int
 
+// UrlShort asks bit.ly to shorten any link in `msg` longer than `minlen`
 func UrlShort(msg string, e *irc.Event) (string, bool) {
 	if apikey == "" {
 		return "bitly api key not set", false
@@ -33,7 +34,7 @@ func UrlShort(msg string, e *irc.Event) (string, bool) {
 		}
 		link, err := bitlyShortUrl(url)
 		if err != nil {
-			log.Printf("error looking up url %q: %s", url, err)
+			log.Infof("error looking up url %q: %s", url, err)
 			continue
 		}
 		shorts = append(shorts, link)
