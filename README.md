@@ -16,6 +16,7 @@ A work in progress.
 * Multiple channels
 * multiple servers
 * Ignore (e.g. other bots)
+* Plugin support, see README in `plugins` dir.
 
 ### Factoid database
 
