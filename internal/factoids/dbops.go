@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"regexp"
 	"sort"
@@ -16,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/adamhassel/bender/internal/helpers"
+	log "github.com/sirupsen/logrus"
 )
 
 // factoids is the data struture used for thread safe in memorystorage of factoids
@@ -43,13 +43,13 @@ func init() {
 	f.v = make(map[string]FactoidSet)
 	c, err := ParseConfFile(DefaultConfFile)
 	if err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	if c.DatabaseFile == "" {
 		c.DatabaseFile = DefaultDBPath
 	}
 	if err := loadDB(c.DatabaseFile); err != nil {
-		log.Print(err)
+		log.Error(err)
 	}
 	rand.Seed(time.Now().UnixNano())
 }
@@ -68,12 +68,12 @@ func loadDB(filename string) error {
 	f.db = filename
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return fmt.Errorf("error loading database at %q: %w", err)
+		return fmt.Errorf("error loading database at %q: %w", filename, err)
 	}
 	factsfromdisk := make(map[string][]factoid)
 	//	if err := yaml.Unmarshal(content, &factsfromdisk); err != nil {
 	if err := json.Unmarshal(content, &factsfromdisk); err != nil {
-		return fmt.Errorf("error parsing database at %q: %w", err)
+		return fmt.Errorf("error parsing database at %q: %w", filename, err)
 	}
 	f.m.Lock()
 	defer f.m.Unlock()
@@ -197,7 +197,7 @@ func syncToDisk() error {
 		return fmt.Errorf("error marshalling DB: %w", err)
 	}
 	if err := ioutil.WriteFile(f.db, jsondata, 0644); err != nil {
-		return fmt.Errorf("error syncing to file %q: %w", err)
+		return fmt.Errorf("error syncing to file %q: %w", f.db, err)
 	}
 	return nil
 }

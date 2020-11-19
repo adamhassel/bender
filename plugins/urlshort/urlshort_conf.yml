@@ -1,0 +1,3 @@
+config:
+  apikey: "some_api_key"
+  minlen: 15
