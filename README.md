@@ -29,4 +29,4 @@ A work in progress.
 
 A fun friday game. `op` the bot and have it kick random channel members
 
-## See also the TODO for planned stuff
+## See also the TODO and Issues list for planned stuff
