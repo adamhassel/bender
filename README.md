@@ -7,6 +7,8 @@ A work in progress.
 
     go get github.com/adamhassel/bender
 	go build -o bender cmd/bender/main.go
+	# optional, if you want plugins:
+	go build -buildmode=plugin plugins/<plugin>/<plugin>.go -o <plugin>.so
 	# edit config, save in conf/conf.yml
 	./bender
 
