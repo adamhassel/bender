@@ -11,12 +11,26 @@ import (
 	irc "github.com/thoj/go-ircevent"
 )
 
+// Matchers lists exported matchers in the plugin
 var Matchers = []string{"Chanlog"}
 
 var loggers map[string]*log.Logger
 
+// A logrus formatter
 type IRCFormatter struct{}
 
+// Format implements the logrus.Formatter interface
+func (IRCFormatter) Format(entry *log.Entry) ([]byte, error) {
+	// make sure all fields are present
+	user, userok := entry.Data["user"]
+	if !userok {
+		return nil, errors.New("required fields missing")
+	}
+	msg := fmt.Sprintf("%s < %s> %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
+	return []byte(msg), nil
+}
+
+// Chanlog is called for every message, and logs it if it's supposed to
 func Chanlog(msg string, e *irc.Event) (string, bool) {
 	channel := e.Arguments[0]
 
@@ -29,17 +43,7 @@ func Chanlog(msg string, e *irc.Event) (string, bool) {
 	return "", false
 }
 
-func (IRCFormatter) Format(entry *log.Entry) ([]byte, error) {
-	// make sure all fields are present
-	user, userok := entry.Data["user"]
-	if !userok {
-		return nil, errors.New("required fields missing")
-	}
-	msg := fmt.Sprintf("%s < %s> %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
-	return []byte(msg), nil
-}
-
-// Set the log formatter
+// Configure configures the plugin
 func Configure(c map[interface{}]interface{}) error {
 	channels, ok := c["channels"]
 	if !ok {
@@ -85,7 +89,7 @@ func makeDatePath() string {
 	return filepath.Join(now.Format("2006"), now.Format("01"), now.Format("02"))
 }
 
-// rotate the loggers file. Close existing, open a new. Used e.g. on date changes
+// rotate the logger's files. Close existing, open a new. Used e.g. on date changes
 func rotate(logger *log.Logger) error {
 	return nil
 }
