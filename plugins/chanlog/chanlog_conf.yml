@@ -1,0 +1,3 @@
+config:
+  channels: ["#mychannel"]
+  logroot: "logs"
