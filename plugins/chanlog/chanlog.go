@@ -91,5 +91,6 @@ func makeDatePath() string {
 
 // rotate the logger's files. Close existing, open a new. Used e.g. on date changes
 func rotate(logger *log.Logger) error {
+	// TODO: implement :P
 	return nil
 }
