@@ -1,0 +1,3 @@
+config:
+  channels: ["#testbot"]
+  logroot: "logs"
