@@ -187,7 +187,7 @@ func logDateChange() {
 	lm.Lock()
 	for _, logger := range loggers {
 		logger.SetFormatter(new(IRCSystemFormatter))
-		logger.Info("Date changed to %s", time.Now().Format("Jan 02 2006"))
+		logger.Infof("Date changed to %s", time.Now().Format("Jan 02 2006"))
 		logger.SetFormatter(new(IRCFormatter))
 	}
 	defer lm.Unlock()
