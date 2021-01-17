@@ -11,7 +11,7 @@ example can be a function that finds any web link in a message, and posts a
 shortened version of it.
 
 If you want to export one or more matchers in your plugin, you must include an
-exportable variable with the names of matcher functions (which must also be
+exported variable, `Matchers` of type `[]string` with the names of matcher functions (which must also be
 exported):
 
 ```golang
