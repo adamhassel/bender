@@ -35,8 +35,11 @@ func (*IRCFormatter) Format(entry *log.Entry) ([]byte, error) {
 		return nil, errors.New("required fields missing")
 	}
 	var msg string
-	if action := entry.Data["action"].(bool); action {
-		msg = fmt.Sprintf("%s *** %s %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
+	action, ok := entry.Data["action"]
+	if ok {
+		if a, ok := action.(bool); ok && a {
+			msg = fmt.Sprintf("%s *** %s %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
+		}
 	} else {
 		msg = fmt.Sprintf("%s < %s> %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
 	}
