@@ -34,7 +34,12 @@ func (*IRCFormatter) Format(entry *log.Entry) ([]byte, error) {
 	if !userok {
 		return nil, errors.New("required fields missing")
 	}
-	msg := fmt.Sprintf("%s < %s> %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
+	var msg string
+	if action := entry.Data["action"].(bool); action {
+		msg = fmt.Sprintf("%s *** %s %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
+	} else {
+		msg = fmt.Sprintf("%s < %s> %s\n", entry.Time.Format("15:04:05"), user, entry.Message)
+	}
 	return []byte(msg), nil
 }
 
@@ -54,7 +59,11 @@ func Chanlog(msg string, e *irc.Event) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	logger.WithFields(log.Fields{"user": e.Nick}).Info(msg)
+	fields := log.Fields{"user": e.Nick}
+	if e.Code == "CTCP_ACTION" {
+		fields["action"] = true
+	}
+	logger.WithFields(fields).Info(msg)
 	return "", false
 }
 

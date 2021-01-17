@@ -42,6 +42,15 @@ func InitBot(ctx context.Context) error {
 			go HandleMessages(ctx, irccon, e)
 		})
 
+		// For now, handle actions as regular messages
+		irccon.AddCallback("CTCP_ACTION", func(e *irc.Event) {
+			if stringInSlice(e.Nick, sconf.Ignore) {
+				irccon.Log.Printf("Ignoring %q", e.Nick)
+				return
+			}
+			go HandleMessages(ctx, irccon, e)
+		})
+
 		err := irccon.Connect(conf.ServerPort(server))
 		if err != nil {
 			return fmt.Errorf("error connecting to IRC server %q: %w", server, err)

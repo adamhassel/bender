@@ -2,6 +2,7 @@ db/factoids.yml
 bender
 .idea/
 log/
+logs/
 db/
 conf/factoids.yml
 conf/conf.yml
