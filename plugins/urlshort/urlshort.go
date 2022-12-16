@@ -116,6 +116,7 @@ func shortenUrl(url string, service service) (string, error) {
 	}
 	client := http.Client{}
 	req.Header.Set("Authorization", "Bearer "+apikey)
+	req.Header.Set("Content-Type", "application/json")
 	if dout, err := httputil.DumpRequest(req, true); err != nil {
 		log.Debugf("Request: %s", string(dout))
 	}
