@@ -8,7 +8,7 @@ Plugins can implement either "matchers" or "commands".
 
 A matcher is a function that works on whatever is written in a channel. An
 example can be a function that finds any web link in a message, and posts a
-shortened version of it.
+shortened version of it (this is actually an included plugin, in `urlshort`).
 
 If you want to export one or more matchers in your plugin, you must include an
 exported variable, `Matchers` of type `[]string` with the names of matcher functions (which must also be
