@@ -95,7 +95,7 @@ func Configure(c map[interface{}]interface{}) error {
 
 func shortenUrl(url string, service service) (string, error) {
 	var req *http.Request
-	var resultKey string
+	var resultKey []string
 	switch service {
 	case bitly:
 		var err error
@@ -103,14 +103,14 @@ func shortenUrl(url string, service service) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		resultKey = "link"
+		resultKey = []string{"link"}
 	case tinyurl:
 		var err error
 		req, err = tinyURLShortUrl(url)
 		if err != nil {
 			return "", err
 		}
-		resultKey = "data.tiny_url"
+		resultKey = []string{"data", "tiny_url"}
 	default:
 		return "", errors.New("unknown service")
 	}
@@ -133,7 +133,7 @@ func shortenUrl(url string, service service) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fastjson.GetString(result, resultKey), nil
+	return fastjson.GetString(result, resultKey...), nil
 }
 
 func bitlyShortUrl(url string) (*http.Request, error) {
