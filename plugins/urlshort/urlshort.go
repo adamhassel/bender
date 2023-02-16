@@ -146,7 +146,7 @@ func bitlyShortUrl(url string) (*http.Request, error) {
 
 func tinyURLShortUrl(url string) (*http.Request, error) {
 	body := fmt.Sprintf(` { 
-		"domain" :   "tiny.one",
+		"domain" :   "tinyurl.com",
 		"url" : %q
 		}`, url)
 	return http.NewRequest("POST", tinyurlAPIUrl, bytes.NewBufferString(body))
