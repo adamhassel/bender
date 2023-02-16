@@ -38,7 +38,7 @@ const bitlyAPIUrl = "https://api-ssl.bitly.com/v4/shorten"
 const tinyurlAPIUrl = "https://api.tinyurl.com/create"
 
 var Matchers = []string{"UrlShort"}
-var apikey string
+var apikey, customDomain string
 var minlen int
 var serv service
 
@@ -66,6 +66,12 @@ func UrlShort(msg string, e *irc.Event) (string, bool) {
 
 // Configure is called by the bot on startup to configure the plugin
 func Configure(c map[interface{}]interface{}) error {
+	if cd, ok := c["custom_domain"]; ok {
+		customDomain, ok = cd.(string)
+		if !ok {
+			return errors.New("invalid custom_domain format")
+		}
+	}
 	key, ok := c["apikey"]
 	if !ok {
 		return errors.New("no apikey found")
@@ -137,16 +143,22 @@ func shortenUrl(url string, service service) (string, error) {
 }
 
 func bitlyShortUrl(url string) (*http.Request, error) {
-	body := fmt.Sprintf(` { 
-		"domain" :   "bit.ly",
+	cd := `"domain":"bit.ly",`
+	if customDomain != "" {
+		cd = `"domain":"` + customDomain + `",`
+	}
+	body := fmt.Sprintf(` {`+cd+`
 		"long_url" : %q
 		}`, url)
 	return http.NewRequest("POST", bitlyAPIUrl, bytes.NewBufferString(body))
 }
 
 func tinyURLShortUrl(url string) (*http.Request, error) {
-	body := fmt.Sprintf(` { 
-		"domain" :   "tinyurl.com",
+	var cd string
+	if customDomain != "" {
+		cd = `"domain":"` + customDomain + `",`
+	}
+	body := fmt.Sprintf(` {`+cd+`
 		"url" : %q
 		}`, url)
 	return http.NewRequest("POST", tinyurlAPIUrl, bytes.NewBufferString(body))
