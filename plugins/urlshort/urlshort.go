@@ -125,13 +125,13 @@ func shortenUrl(url string, service service) (string, error) {
 		return "", err
 	}
 	defer res.Body.Close()
-	if res.StatusCode >= 300 {
-		return "", fmt.Errorf("got error reply from upstream: %s", res.Status)
-	}
 	var result []byte
 	result, err = ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
+	}
+	if res.StatusCode >= 300 {
+		return "", fmt.Errorf("got error reply from upstream: %s, body %q", res.Status, string(result))
 	}
 	return fastjson.GetString(result, resultKey...), nil
 }
