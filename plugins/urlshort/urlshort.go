@@ -48,9 +48,6 @@ var serv service
 
 // UrlShort asks bit.ly to shorten any link in `msg` longer than `minlen`
 func UrlShort(msg string, e *irc.Event) (string, bool) {
-	if apikey == "" {
-		return "bitly api key not set", false
-	}
 	m := xurls.Strict()
 	urls := m.FindAllString(msg, -1)
 	shorts := make([]string, 0, len(urls))
