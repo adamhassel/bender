@@ -2,17 +2,22 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
+	url2 "net/url"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 	irc "github.com/thoj/go-ircevent"
 	"github.com/valyala/fastjson"
 	"mvdan.cc/xurls/v2"
+
+	"github.com/adamhassel/bender/internal/helpers"
 )
 
 type service int
@@ -40,11 +45,14 @@ func ParseService(s string) service {
 const bitlyAPIUrl = "https://api-ssl.bitly.com/v4/shorten"
 const tinyurlAPIUrl = "https://api.tinyurl.com/create"
 const cleanuriAPIUrl = "https://cleanuri.com/api/v1/shorten"
+const cleanparamfile = "plugins/urlshort/tracking.json"
 
 var Matchers = []string{"UrlShort"}
 var apikey, customDomain string
+var cleanup bool
 var minlen int
 var serv service
+var cleanlist helpers.StringSet
 
 // UrlShort asks bit.ly to shorten any link in `msg` longer than `minlen`
 func UrlShort(msg string, e *irc.Event) (string, bool) {
@@ -88,7 +96,7 @@ func Configure(c map[interface{}]interface{}) error {
 	if !ok {
 		return errors.New("invalid minlen format")
 	}
-	serv = tinyurl // default to tinyurl
+	serv = cleanuri // default to cleanuri
 	s, ok := c["service"]
 	if ok {
 		ss, ok := s.(string)
@@ -97,12 +105,35 @@ func Configure(c map[interface{}]interface{}) error {
 		}
 		serv = ParseService(ss)
 	}
+	cleanup = true
+	clean, ok := c["cleanup"]
+	if ok {
+		var isok bool
+		cleanup, isok = clean.(bool)
+		if !isok {
+			return errors.New("invalid cleanup format")
+		}
+	}
+	// load the list
+	if cleanup {
+		if err := loadCleanParams(cleanparamfile); err != nil {
+			return errors.New("error loading cleanup parameters file")
+		}
+	}
 	return nil
 }
 
 func shortenUrl(url string, service service) (string, error) {
 	var req *http.Request
 	var resultKey []string
+	if cleanup {
+		var err error
+		url, err = cleanURL(url)
+		if err != nil {
+			log.Errorf("error cleaning url: %s", err)
+		}
+
+	}
 	switch service {
 	case bitly:
 		var err error
@@ -177,4 +208,46 @@ func tinyURLShortUrl(url string) (*http.Request, error) {
 func cleanuriShortUrl(url string) (*http.Request, error) {
 	body := fmt.Sprintf(` { "url" : %q }`, url)
 	return http.NewRequest("POST", cleanuriAPIUrl, bytes.NewBufferString(body))
+}
+
+func loadCleanParams(filename string) error {
+	jsonFile, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer jsonFile.Close()
+	raw, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return err
+	}
+	type cl struct {
+		Name    string
+		Company string
+	}
+	data := make([]cl, 0)
+	if err := json.Unmarshal(raw, &data); err != nil {
+		return err
+	}
+	cleanlist = make(helpers.StringSet)
+	for _, d := range data {
+		cleanlist.Add(d.Name)
+	}
+	return nil
+}
+
+func cleanURL(url string) (string, error) {
+	u, err := url2.Parse(url)
+	if err != nil {
+		return "", err
+	}
+
+	v := u.Query()
+	for k, _ := range v {
+		if cleanlist.Exists(k) {
+			v.Del(k)
+			log.Infof("removed tracking parameter %q from url", k)
+		}
+	}
+	u.RawQuery = v.Encode()
+	return u.String(), nil
 }
