@@ -130,7 +130,7 @@ func shortenUrl(url string, service service) (string, error) {
 		var err error
 		url, err = cleanURL(url)
 		if err != nil {
-			log.Error("error cleaning url: %s", err)
+			log.Errorf("error cleaning url: %s", err)
 		}
 
 	}
