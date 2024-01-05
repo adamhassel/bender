@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -21,6 +21,7 @@ const (
 	unknown service = iota
 	bitly
 	tinyurl
+	cleanuri
 )
 
 func ParseService(s string) service {
@@ -29,6 +30,8 @@ func ParseService(s string) service {
 		return bitly
 	case "tinyurl", "tinyurl.com":
 		return tinyurl
+	case "clean", "cleanuri":
+		return cleanuri
 	default:
 		return unknown
 	}
@@ -36,6 +39,7 @@ func ParseService(s string) service {
 
 const bitlyAPIUrl = "https://api-ssl.bitly.com/v4/shorten"
 const tinyurlAPIUrl = "https://api.tinyurl.com/create"
+const cleanuriAPIUrl = "https://cleanuri.com/api/v1/shorten"
 
 var Matchers = []string{"UrlShort"}
 var apikey, customDomain string
@@ -117,11 +121,20 @@ func shortenUrl(url string, service service) (string, error) {
 			return "", err
 		}
 		resultKey = []string{"data", "tiny_url"}
+	case cleanuri:
+		var err error
+		req, err = cleanuriShortUrl(url)
+		if err != nil {
+			return "", err
+		}
+		resultKey = []string{"result_url"}
 	default:
 		return "", errors.New("unknown service")
 	}
 	client := http.Client{}
-	req.Header.Set("Authorization", "Bearer "+apikey)
+	if len(apikey) > 0 {
+		req.Header.Set("Authorization", "Bearer "+apikey)
+	}
 	req.Header.Set("Content-Type", "application/json")
 	if dout, err := httputil.DumpRequest(req, true); err != nil {
 		log.Debugf("Request: %s", string(dout))
@@ -132,7 +145,7 @@ func shortenUrl(url string, service service) (string, error) {
 	}
 	defer res.Body.Close()
 	var result []byte
-	result, err = ioutil.ReadAll(res.Body)
+	result, err = io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
@@ -162,4 +175,9 @@ func tinyURLShortUrl(url string) (*http.Request, error) {
 		"url" : %q
 		}`, url)
 	return http.NewRequest("POST", tinyurlAPIUrl, bytes.NewBufferString(body))
+}
+
+func cleanuriShortUrl(url string) (*http.Request, error) {
+	body := fmt.Sprintf(` { "url" : %q }`, url)
+	return http.NewRequest("POST", cleanuriAPIUrl, bytes.NewBufferString(body))
 }
