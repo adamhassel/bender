@@ -6,4 +6,5 @@ logs/
 db/
 conf/factoids.yml
 conf/conf.yml
+plugins/*.yml
 *.so
