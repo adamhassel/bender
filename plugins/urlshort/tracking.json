@@ -52,5 +52,6 @@
   { "name": "hsa_tgt", "company": "Hubspot" },
   { "name": "hsa_ver", "company": "Hubspot" },
   { "name": "mc_cid", "company": "Mailchimp" },
-  { "name": "mc_eid", "company": "Mailchimp" }
+  { "name": "mc_eid", "company": "Mailchimp" },
+  { "name": "idfa", "company": "Apple"}
 ]
