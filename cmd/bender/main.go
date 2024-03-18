@@ -6,7 +6,7 @@ import (
 
 	"github.com/adamhassel/bender/internal/config"
 	"github.com/adamhassel/bender/internal/lib/irc"
-	plugins "github.com/adamhassel/bender/internal/lib/plugins"
+	"github.com/adamhassel/bender/internal/lib/plugins"
 )
 
 // TODO: accept command line arg to specify config file
@@ -26,7 +26,9 @@ func main() {
 	if err := plugins.LoadPlugins(c.Plugins); err != nil {
 		log.Println(err)
 	}
-	irc.InitBot(ctx)
+	if err := irc.InitBot(ctx); err != nil {
+		log.Printf("error initializing bot: %s", err)
+	}
 }
 
 func setServerIdentity(c *config.Config) {
