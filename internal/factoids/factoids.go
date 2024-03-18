@@ -2,6 +2,7 @@ package factoids
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -56,7 +57,7 @@ func Lookup(ctx context.Context, nick, msg string) (string, bool) {
 	factoidstring := strings.TrimPrefix(msg, "!? ")
 	factoidstring = strings.TrimSpace(factoidstring)
 	factoid, err := get(strings.ToLower(factoidstring))
-	if err == ErrNoSuchFact {
+	if errors.Is(err, ErrNoSuchFact) {
 		return fmt.Sprintf("Nobody cares about %s!", factoidstring), false
 	}
 	// substitute $nick for nick of whoever asked

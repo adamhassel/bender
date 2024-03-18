@@ -2,6 +2,7 @@ package irc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 	// TODO: this structure is ugly
 	command, err := ParseCommand(ctx, msg)
 	if err != nil {
-		if err == ErrNotCommand {
+		if errors.Is(err, ErrNotCommand) {
 			replies, err := plugins.Matchers(msg, e)
 			if err != nil {
 				log.Error(err)
