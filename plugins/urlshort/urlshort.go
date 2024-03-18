@@ -27,6 +27,7 @@ const (
 	bitly
 	tinyurl
 	cleanuri
+	isgd
 )
 
 func ParseService(s string) service {
@@ -37,6 +38,8 @@ func ParseService(s string) service {
 		return tinyurl
 	case "clean", "cleanuri":
 		return cleanuri
+	case "is.gd", "isgd":
+		return isgd
 	default:
 		return unknown
 	}
@@ -45,6 +48,7 @@ func ParseService(s string) service {
 const bitlyAPIUrl = "https://api-ssl.bitly.com/v4/shorten"
 const tinyurlAPIUrl = "https://api.tinyurl.com/create"
 const cleanuriAPIUrl = "https://cleanuri.com/api/v1/shorten"
+const isgdAPIUrl = "https://is.gd/create.php"
 const cleanparamfile = "plugins/urlshort/tracking.json"
 
 var Matchers = []string{"UrlShort"}
@@ -156,6 +160,13 @@ func shortenUrl(url string, service service) (string, error) {
 			return "", err
 		}
 		resultKey = []string{"result_url"}
+	case isgd:
+		var err error
+		req, err = isgdShortUrl(url)
+		if err != nil {
+			return "", err
+		}
+		resultKey = []string{"shorturl"}
 	default:
 		return "", errors.New("unknown service")
 	}
@@ -163,9 +174,13 @@ func shortenUrl(url string, service service) (string, error) {
 	if len(apikey) > 0 {
 		req.Header.Set("Authorization", "Bearer "+apikey)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	if dout, err := httputil.DumpRequest(req, true); err != nil {
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	if dout, err := httputil.DumpRequest(req, true); err == nil {
 		log.Debugf("Request: %s", string(dout))
+	} else {
+		log.Debug(err)
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -177,6 +192,7 @@ func shortenUrl(url string, service service) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	log.Debug(string(result))
 	if res.StatusCode >= 300 {
 		return "", fmt.Errorf("got error reply from upstream: %s, body %q", res.Status, string(result))
 	}
@@ -208,6 +224,17 @@ func tinyURLShortUrl(url string) (*http.Request, error) {
 func cleanuriShortUrl(url string) (*http.Request, error) {
 	body := fmt.Sprintf(` { "url" : %q }`, url)
 	return http.NewRequest("POST", cleanuriAPIUrl, bytes.NewBufferString(body))
+}
+
+func isgdShortUrl(url string) (*http.Request, error) {
+	body := fmt.Sprintf("format=json&url=%s", url2.QueryEscape(url))
+	log.Info("yay")
+	req, err := http.NewRequest("POST", isgdAPIUrl, bytes.NewBufferString(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return req, nil
 }
 
 func loadCleanParams(filename string) error {
@@ -242,7 +269,7 @@ func cleanURL(url string) (string, error) {
 	}
 
 	v := u.Query()
-	for k, _ := range v {
+	for k := range v {
 		if cleanlist.Exists(k) {
 			v.Del(k)
 			log.Infof("removed tracking parameter %q from url", k)

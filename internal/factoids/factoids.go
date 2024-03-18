@@ -135,10 +135,10 @@ func Store(msg string, from string) string {
 	now := time.Now().Round(time.Second)
 	fact := factoid{Value: val, Origin: from, SplitWord: splitword, Created: &now, Language: lang}
 	if err := set(strings.ToLower(key), fact); err != nil {
-		switch err {
-		case ErrFactAlreadyExists:
+		switch {
+		case errors.Is(err, ErrFactAlreadyExists):
 			return "I know that already"
-		case ErrInvalidUTF8:
+		case errors.Is(err, ErrInvalidUTF8):
 			return "Your factoid is not valid UTF8"
 		}
 		return err.Error()

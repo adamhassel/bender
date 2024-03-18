@@ -46,30 +46,30 @@ type ctxconf int
 
 const configkey ctxconf = iota
 
+// InitLogger initializes the logger
 func InitLogger(config *Config) {
-	logger := log.New()
 	level, err := log.ParseLevel(config.Main.LogLevel)
+	log.Info(config.Main.LogLevel)
 	if err != nil {
 		fmt.Printf("unknown loglevel %q, defaulting to 'debug'", level)
 		level = log.DebugLevel
 	}
-	logger.Out = os.Stderr
+	log.SetOutput(os.Stderr)
 	file, err := os.OpenFile(config.Main.Logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
-		logger.Out = file
+		log.SetOutput(file)
 	} else {
-		logger.Info("Failed to log to file, using default stderr")
+		log.Infof("Failed to log to file %q (%s), using default stderr", config.Main.Logfile, err)
 	}
-
-	logger.SetLevel(level)
-	logger.Formatter = &log.TextFormatter{}
-	config.Main.LogWriter = logger.Writer()
-	log.SetOutput(logger.Writer())
+	log.SetLevel(level)
+	log.SetFormatter(&log.TextFormatter{})
+	config.Main.LogWriter = log.StandardLogger().Writer()
+	log.Infof("logging at level: %s", log.GetLevel().String())
 }
 
 // ParseConfFile parses configuration in `filename`, saves it in `c` and returns an error
 func ParseConfFile(filename string, c *Config) error {
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("error reading %q: %w", filename, err)
 	}

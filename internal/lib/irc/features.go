@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+	irc "github.com/thoj/go-ircevent"
+
 	"github.com/adamhassel/bender/internal/factoids"
 	"github.com/adamhassel/bender/internal/helpers"
 	"github.com/adamhassel/bender/internal/lib/plugins"
-	log "github.com/sirupsen/logrus"
-	irc "github.com/thoj/go-ircevent"
 )
 
 // HandleMessages is the function that intercepts channel (or private) messages and handles them
@@ -95,7 +96,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 
 		// Can we kick anyone?
 		if !users.Exists("@" + c.GetNick()) {
-			SendReply(c, channel, fmt.Sprintf("I am not a channel operator"), false)
+			SendReply(c, channel, "I am not a channel operator", false)
 			return
 		}
 

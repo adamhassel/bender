@@ -124,7 +124,9 @@ func makeDatePath() string {
 // getLogFileHandle will return a handle to a file named and located for logging
 func getLogfilehandle(logroot, channel string) (*os.File, error) {
 	logfile := filepath.Join(logroot, makeDatePath(), channel+".log")
-	os.MkdirAll(path.Dir(logfile), 0700)
+	if err := os.MkdirAll(path.Dir(logfile), 0700); err != nil {
+		return nil, err
+	}
 	return os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 }
 
@@ -162,7 +164,7 @@ func configureLogging(channel string, logger *log.Logger) error {
 }
 
 func rotateAll() error {
-	for channel, _ := range loggers {
+	for channel := range loggers {
 		if e := rotate(channel); e != nil {
 			return e
 		}
