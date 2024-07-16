@@ -28,6 +28,7 @@ const (
 	tinyurl
 	cleanuri
 	isgd
+	shortio
 )
 
 func ParseService(s string) service {
@@ -40,25 +41,39 @@ func ParseService(s string) service {
 		return cleanuri
 	case "is.gd", "isgd":
 		return isgd
+	case "short.io", "shortio":
+		return shortio
 	default:
 		return unknown
 	}
+}
+
+func authString(s service, token string) string {
+	switch s {
+	case shortio:
+		return token
+	}
+	return "Bearer " + token
 }
 
 const bitlyAPIUrl = "https://api-ssl.bitly.com/v4/shorten"
 const tinyurlAPIUrl = "https://api.tinyurl.com/create"
 const cleanuriAPIUrl = "https://cleanuri.com/api/v1/shorten"
 const isgdAPIUrl = "https://is.gd/create.php"
+const shortioAPIUrl = "https://api.short.io/links/public"
 const cleanparamfile = "plugins/urlshort/tracking.json"
 
 var Matchers = []string{"UrlShort"}
+
+var ErrNoCustomDomain = errors.New("custom domain undefined")
+
 var apikey, customDomain string
 var cleanup bool
 var minlen int
 var serv service
 var cleanlist helpers.StringSet
 
-// UrlShort asks bit.ly to shorten any link in `msg` longer than `minlen`
+// UrlShort asks a shortener to shorten any link in `msg` longer than `minlen`
 func UrlShort(msg string, e *irc.Event) (string, bool) {
 	m := xurls.Strict()
 	urls := m.FindAllString(msg, -1)
@@ -167,12 +182,20 @@ func shortenUrl(url string, service service) (string, error) {
 			return "", err
 		}
 		resultKey = []string{"shorturl"}
+	case shortio:
+		var err error
+		req, err = shortioShortUrl(url)
+		if err != nil {
+			return "", err
+		}
+		resultKey = []string{"shortURL"}
 	default:
 		return "", errors.New("unknown service")
 	}
 	client := http.Client{}
 	if len(apikey) > 0 {
-		req.Header.Set("Authorization", "Bearer "+apikey)
+
+		req.Header.Set("Authorization", authString(service, apikey))
 	}
 	if req.Header.Get("Content-Type") == "" {
 		req.Header.Set("Content-Type", "application/json")
@@ -208,6 +231,17 @@ func bitlyShortUrl(url string) (*http.Request, error) {
 		"long_url" : %q
 		}`, url)
 	return http.NewRequest("POST", bitlyAPIUrl, bytes.NewBufferString(body))
+}
+
+func shortioShortUrl(url string) (*http.Request, error) {
+	if customDomain == "" {
+		return nil, ErrNoCustomDomain
+	}
+	cd := `"domain":"` + customDomain + `",`
+	body := fmt.Sprintf(` {`+cd+`
+		"originalURL" : %q
+		}`, url)
+	return http.NewRequest("POST", shortioAPIUrl, bytes.NewBufferString(body))
 }
 
 func tinyURLShortUrl(url string) (*http.Request, error) {
