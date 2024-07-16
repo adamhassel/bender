@@ -1,4 +1,9 @@
 config:
+  # An api key for the service of choice
   apikey: "some_api_key"
+  # minimum length of the posted URL required for the shortener to kick in
   minlen: 15
-  service: ["tinyurl"|"bitly"]
+  # URL shortening service. Pick one.
+  service: ["tinyurl"|"bitly"|"cleanuri"|"isgd"|"shortio"]
+  # shortio requires a custom domain. tinyurl/bitly supports it as an optional (somtimes paid) feature
+  custom_domain: "abcd.short.gy"
