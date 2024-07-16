@@ -8,8 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/adamhassel/bender/internal/config"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/adamhassel/bender/internal/config"
 
 	irc "github.com/thoj/go-ircevent"
 )
@@ -24,7 +25,7 @@ func InitBot(ctx context.Context) error {
 		irccon.Debug = conf.Main.LogLevel == "debug"
 		irccon.UseTLS = sconf.SSL
 		irccon.Password = sconf.Password
-		irccon.TLSConfig = &tls.Config{InsecureSkipVerify: sconf.SkipInsecureVerify}
+		irccon.TLSConfig = &tls.Config{InsecureSkipVerify: sconf.SkipInsecureVerify, ServerName: server}
 
 		// Join configured channels
 		irccon.AddCallback("001", func(e *irc.Event) {
