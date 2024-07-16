@@ -7,3 +7,5 @@ config:
   service: ["tinyurl"|"bitly"|"cleanuri"|"isgd"|"shortio"]
   # shortio requires a custom domain. tinyurl/bitly supports it as an optional (somtimes paid) feature
   custom_domain: "abcd.short.gy"
+  # clean tracking parts of a URL before shortening. See/edit tracking.json for what's being cleaned. Default is true, so you only really need to include this if you weant to turn it off for whatever reason
+  cleanup: true
