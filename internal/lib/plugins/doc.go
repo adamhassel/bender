@@ -4,7 +4,7 @@
 // signature:
 // func Example(args []string, e *irc.Event) (reply string, action bool)
 //
-// Each plugins must have a config file which defines IRC commands and the functions, matching the signature above, that
+// Each plugin must have a config file which defines IRC commands and the functions, matching the signature above, that
 // implements them:
 //
 // ```

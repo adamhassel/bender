@@ -80,8 +80,8 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 			time.Sleep(200 * time.Millisecond)
 		}
 	case "coffee":
-		reply, action := fmt.Sprintf("pours %s a cup of hot coffee, straight from the pot", e.Nick), true
-		SendReply(c, channel, reply, action)
+		reply := fmt.Sprintf("pours %s a cup of hot coffee, straight from the pot", e.Nick)
+		SendReply(c, channel, reply, true)
 	case "buy": // this is the most used !bar feature from old bender, so it's implemented on its own.
 		nick, item := splitBySpace(command.Argument)
 		reply := fmt.Sprintf("gives %s a %s, \"Compliments of %s!\"", nick, item, e.Nick)
@@ -92,7 +92,7 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 			SendReply(c, channel, fmt.Sprintf("Error getting user list: %s", err), false)
 			return
 		}
-		users := helpers.NewStringSet(strings.Split(strings.TrimSpace(l), " ")...)
+		users := helpers.NewSet(strings.Split(strings.TrimSpace(l), " ")...)
 
 		// Can we kick anyone?
 		if !users.Exists("@" + c.GetNick()) {
@@ -108,10 +108,10 @@ func HandleMessages(ctx context.Context, c *irc.Connection, e *irc.Event) {
 			return
 		}
 
-		// Let's not kick ourself or the channel. Also, we have a '@' now, cause we're channel operator
+		// Let's not kick ourselves or the channel. Also, we have a '@' now, because we're channel operator
 		users.Delete("@" + c.GetNick())
 
-		kickme := users.Slice().Random()
+		kickme := users.Random()
 		if command.Argument == "" {
 			command.Argument = "Det har du sikkert fortjent"
 		}

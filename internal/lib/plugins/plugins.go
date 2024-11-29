@@ -4,7 +4,7 @@ package plugins
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"plugin"
 
 	log "github.com/sirupsen/logrus"
@@ -44,7 +44,7 @@ var (
 // loadPluginConf loads per-plugins configuration
 func loadPluginConf(filename string) (map[string]interface{}, error) {
 	c := make(map[string]interface{})
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %q: %w", filename, err)
 	}
@@ -127,7 +127,7 @@ func configureMatchers(p *Plugin) error {
 	return nil
 }
 
-// setPluginConf if called if plugin-specific configuration is found
+// setPluginConf is called if plugin-specific configuration is found
 func setPluginConf(p *plugin.Plugin, conf map[interface{}]interface{}) error {
 	//c, ok := conf.(map[interface{}]interface{})
 	/*if !ok {

@@ -2,18 +2,13 @@ package helpers
 
 import (
 	"math/rand"
-	"time"
 )
 
-type StringSlice []string
+type Slice[T any] []T
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
-func (s StringSlice) Random() string {
+func (s Slice[T]) Random() (rv T) {
 	if len(s) == 0 {
-		return ""
+		return rv
 	}
 	return s[rand.Intn(len(s))]
 }

@@ -3,15 +3,16 @@ package factoids
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/adamhassel/bender/internal/helpers"
-	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	DatabaseFile string              `yaml:"database"`
-	ReplyStrings helpers.StringSlice `yaml:"replystrings"`
+	DatabaseFile string                `yaml:"database"`
+	ReplyStrings helpers.Slice[string] `yaml:"replystrings"`
 }
 
 type ctxconf int
@@ -20,7 +21,7 @@ const configkey ctxconf = iota
 
 // ParseConfFile parses configuration in `filename` and returns a configuration and an error
 func ParseConfFile(filename string) (Config, error) {
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		return Config{}, fmt.Errorf("error reading %q: %w", filename, err)
 	}
@@ -39,7 +40,7 @@ func SaveToFile(filename string, c Config) error {
 	if err != nil {
 		return fmt.Errorf("error marshalling config: %w", err)
 	}
-	if err := ioutil.WriteFile(filename, raw, 0644); err != nil {
+	if err := os.WriteFile(filename, raw, 0644); err != nil {
 		return fmt.Errorf("error writing file %s: %w", filename, err)
 	}
 	return nil
