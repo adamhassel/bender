@@ -11,7 +11,7 @@ func Test_cleanURL(t *testing.T) {
 		url string
 	}
 
-	cleanlist = helpers.NewStringSet("foo", "bar", "baz")
+	cleanlist = helpers.NewSet("foo", "bar", "baz")
 
 	var tests = []struct {
 		name    string

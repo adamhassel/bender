@@ -43,7 +43,7 @@ func (f FactoidSet) Exists(value factoid) bool {
 	return ok
 }
 
-// Slice returns the values of the set as a slice.
+// Slice returns the members of the set as a slice.
 func (f FactoidSet) Slice() []factoid {
 	if f == nil {
 		return nil
@@ -57,8 +57,8 @@ func (f FactoidSet) Slice() []factoid {
 	return r
 }
 
-// Slice returns the values of the set as a slice.
-func (f FactoidSet) StringSlice() []string {
+// Values returns the values of the set as a slice.
+func (f FactoidSet) Values() []string {
 	if f == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ func (f FactoidSet) StringSlice() []string {
 	return r
 }
 
-// Remove removes a value from the set.
+// Delete removes a value from the set.
 func (f FactoidSet) Delete(val string) {
 	if f == nil {
 		return

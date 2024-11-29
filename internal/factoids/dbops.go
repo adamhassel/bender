@@ -5,17 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"math/rand"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
-	"time"
 	"unicode/utf8"
 
-	"github.com/adamhassel/bender/internal/helpers"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/adamhassel/bender/internal/helpers"
 )
 
 // factoids is the data struture used for thread safe in memorystorage of factoids
@@ -51,11 +50,10 @@ func init() {
 	if err := loadDB(c.DatabaseFile); err != nil {
 		log.Error(err)
 	}
-	rand.Seed(time.Now().UnixNano())
 }
 
 func RandomKey() string {
-	keys := make(helpers.StringSlice, len(f.v))
+	keys := make(helpers.Slice[string], len(f.v))
 	var i int
 	for k := range f.v {
 		keys[i] = k
@@ -66,7 +64,7 @@ func RandomKey() string {
 
 func loadDB(filename string) error {
 	f.db = filename
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("error loading database at %q: %w", filename, err)
 	}
@@ -118,7 +116,7 @@ func (f *factoids) getall(key string) ([]string, error) {
 	if !ok || len(vals) == 0 {
 		return nil, ErrNoSuchFact
 	}
-	return vals.StringSlice(), nil
+	return vals.Values(), nil
 }
 
 // Delete removes a value from a key matching substring `substr`. If more than one match, return error
@@ -196,7 +194,7 @@ func syncToDisk() error {
 	if err != nil {
 		return fmt.Errorf("error marshalling DB: %w", err)
 	}
-	if err := ioutil.WriteFile(f.db, jsondata, 0644); err != nil {
+	if err := os.WriteFile(f.db, jsondata, 0644); err != nil {
 		return fmt.Errorf("error syncing to file %q: %w", f.db, err)
 	}
 	return nil

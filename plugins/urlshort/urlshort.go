@@ -71,7 +71,7 @@ var apikey, customDomain string
 var cleanup bool
 var minlen int
 var serv service
-var cleanlist helpers.StringSet
+var cleanlist helpers.Set[string]
 
 // UrlShort asks a shortener to shorten any link in `msg` longer than `minlen`
 func UrlShort(msg string, e *irc.Event) (string, bool) {
@@ -289,7 +289,7 @@ func loadCleanParams(filename string) error {
 	if err := json.Unmarshal(raw, &data); err != nil {
 		return err
 	}
-	cleanlist = make(helpers.StringSet)
+	cleanlist = helpers.NewSet[string]()
 	for _, d := range data {
 		cleanlist.Add(d.Name)
 	}

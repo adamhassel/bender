@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -84,7 +83,7 @@ func SaveToFile(filename string, c Config) error {
 	if err != nil {
 		return fmt.Errorf("error marshalling config: %w", err)
 	}
-	if err := ioutil.WriteFile(filename, raw, 0644); err != nil {
+	if err := os.WriteFile(filename, raw, 0644); err != nil {
 		return fmt.Errorf("error writing file %s: %w", filename, err)
 	}
 	return nil
