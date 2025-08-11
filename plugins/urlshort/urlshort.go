@@ -29,6 +29,7 @@ const (
 	cleanuri
 	isgd
 	shortio
+	zip1io
 )
 
 func ParseService(s string) service {
@@ -43,6 +44,8 @@ func ParseService(s string) service {
 		return isgd
 	case "short.io", "shortio":
 		return shortio
+	case "zip1.io", "zip1io", "zip1":
+		return zip1io
 	default:
 		return unknown
 	}
@@ -61,6 +64,7 @@ const tinyurlAPIUrl = "https://api.tinyurl.com/create"
 const cleanuriAPIUrl = "https://cleanuri.com/api/v1/shorten"
 const isgdAPIUrl = "https://is.gd/create.php"
 const shortioAPIUrl = "https://api.short.io/links/public"
+const zip1ioAPIUrl = "https://zip1.io/api/create"
 const cleanparamfile = "plugins/urlshort/tracking.json"
 
 var Matchers = []string{"UrlShort"}
@@ -74,7 +78,7 @@ var serv service
 var cleanlist helpers.Set[string]
 
 // UrlShort asks a shortener to shorten any link in `msg` longer than `minlen`
-func UrlShort(msg string, e *irc.Event) (string, bool) {
+func UrlShort(msg string, _ *irc.Event) (string, bool) {
 	m := xurls.Strict()
 	urls := m.FindAllString(msg, -1)
 	shorts := make([]string, 0, len(urls))
@@ -168,6 +172,13 @@ func shortenUrl(url string, service service) (string, error) {
 			return "", err
 		}
 		resultKey = []string{"data", "tiny_url"}
+	case zip1io:
+		var err error
+		req, err = zip1ioShortUrl(url)
+		if err != nil {
+			return "", err
+		}
+		resultKey = []string{"short_url"}
 	case cleanuri:
 		var err error
 		req, err = cleanuriShortUrl(url)
@@ -194,7 +205,6 @@ func shortenUrl(url string, service service) (string, error) {
 	}
 	client := http.Client{}
 	if len(apikey) > 0 {
-
 		req.Header.Set("Authorization", authString(service, apikey))
 	}
 	if req.Header.Get("Content-Type") == "" {
@@ -262,13 +272,17 @@ func cleanuriShortUrl(url string) (*http.Request, error) {
 
 func isgdShortUrl(url string) (*http.Request, error) {
 	body := fmt.Sprintf("format=json&url=%s", url2.QueryEscape(url))
-	log.Info("yay")
 	req, err := http.NewRequest("POST", isgdAPIUrl, bytes.NewBufferString(body))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	return req, nil
+}
+
+func zip1ioShortUrl(url string) (*http.Request, error) {
+	body := fmt.Sprintf(`{"url": "%s"}`, url)
+	return http.NewRequest("POST", zip1ioAPIUrl, bytes.NewBufferString(body))
 }
 
 func loadCleanParams(filename string) error {
