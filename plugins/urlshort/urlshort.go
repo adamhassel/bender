@@ -127,6 +127,7 @@ func Configure(c map[interface{}]interface{}) error {
 			return errors.New("invalid service format")
 		}
 		serv = ParseService(ss)
+		log.Infof("using service %s -> %s", ss, serv)
 	}
 	cleanup = true
 	clean, ok := c["cleanup"]
