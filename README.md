@@ -3,6 +3,8 @@ An IRC bot in Go
 
 A work in progress.
 
+Also, this is **ARCHIVED** and [migrated to codeberg.org](https://codeberg.org/adamhassel/bender).
+
 ## Installation
 
 Following are naïve installation instructions.
